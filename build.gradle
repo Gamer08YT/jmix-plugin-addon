@@ -8,7 +8,7 @@ buildscript {
 }
 
 group = 'de.bytestore'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 
 subprojects {
     apply plugin: 'java-library'
