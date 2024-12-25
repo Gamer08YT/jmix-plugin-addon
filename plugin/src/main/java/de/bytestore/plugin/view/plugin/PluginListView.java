@@ -4,6 +4,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.entity.PluginState;
 import de.bytestore.plugin.service.PluginService;
 import de.bytestore.plugin.service.UpdateService;
 import io.jmix.core.LoadContext;
@@ -43,6 +44,9 @@ public class PluginListView extends StandardListView<Plugin> {
             // Add Badge Theme.
             spanIO.getElement().getThemeList().add("badge");
 
+            // Set Badge Color.
+            spanIO.getElement().getThemeList().add(getStateColor(plugin.getState()));
+
             return spanIO;
         }).setHeader(messageBundle.getMessage("state"));
 
@@ -77,6 +81,23 @@ public class PluginListView extends StandardListView<Plugin> {
 
                 return spanIO;
             }).setHeader(messages.getMessage("required"));
+        }
+    }
+
+    private String getStateColor(PluginState stateIO) {
+        switch (stateIO) {
+            case STARTED -> {
+                return "success";
+            }
+            case FAILED -> {
+                return "error";
+            }
+            case DISABLED -> {
+                return "contrast";
+            }
+            default -> {
+                return "normal";
+            }
         }
     }
 

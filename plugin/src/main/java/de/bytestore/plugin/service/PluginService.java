@@ -230,9 +230,9 @@ public class PluginService {
             listIO.add(this.castPlugin(pluginWrapper));
         }
 
-        listIO.add(getDummyPlugin("proxmox", "0.9.0"));
-        listIO.add(getDummyPlugin("docker", "1.0.1"));
-        listIO.add(getDummyPlugin("paypal", "2.0.0"));
+        listIO.add(getDummyPlugin("proxmox", "0.9.0", de.bytestore.plugin.entity.PluginState.FAILED));
+        listIO.add(getDummyPlugin("docker", "1.0.1", de.bytestore.plugin.entity.PluginState.STARTED));
+        listIO.add(getDummyPlugin("paypal", "2.0.0", de.bytestore.plugin.entity.PluginState.STOPPED));
 
         return listIO;
     }
@@ -244,12 +244,12 @@ public class PluginService {
      * @param versionIO the required version for the plugin
      * @return a dummy Plugin instance with predefined properties
      */
-    private Plugin getDummyPlugin(String nameIO, String versionIO) {
+    private Plugin getDummyPlugin(String nameIO, String versionIO, de.bytestore.plugin.entity.PluginState stateIO) {
         Plugin pluginIO = dataManager.create(Plugin.class);
 
         pluginIO.setId(nameIO);
         pluginIO.setDescription("Dummy Plugin");
-        pluginIO.setState(de.bytestore.plugin.entity.PluginState.STARTED);
+        pluginIO.setState(stateIO);
         pluginIO.setVersion("1.0.0");
         pluginIO.setPath("./plugins/dummy.jar");
         pluginIO.setLicense("Apache 2.0");
@@ -288,7 +288,7 @@ public class PluginService {
      */
     public Plugin getPluginCasted(Object id) {
         if (id instanceof String) {
-            return getDummyPlugin("proxmox", "1.0.0");
+            return getDummyPlugin("proxmox", "1.0.0", de.bytestore.plugin.entity.PluginState.STARTED);
             //return castPlugin(getPlugin((String) id));
         }
 
