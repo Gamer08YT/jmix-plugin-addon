@@ -1,20 +1,30 @@
 package de.bytestore.plugin.configuration;
 
-import de.bytestore.plugin.service.PluginService;
 import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import java.nio.file.Path;
 
 @Configuration
 public class SpringPluginManagerConfiguration {
     @Autowired
-    private PluginService pluginService;
+    private Environment environment;
 
     @Bean
     public SpringPluginManager pluginManager() {
-        return new SpringPluginManager(Path.of(pluginService.getHome()));
+        return new SpringPluginManager(Path.of(getHome()));
+    }
+
+    /**
+     * Retrieves the home directory path for plugins from the environment properties.
+     * The property key is "plugins.home". If not specified, the default value "./plugins/" is returned.
+     *
+     * @return the directory path for plugins as a String.
+     */
+    public String getHome() {
+        return environment.getProperty("plugins.home", "./plugins/");
     }
 }
