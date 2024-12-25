@@ -38,6 +38,12 @@ public class PluginListView extends StandardListView<Plugin> {
     private UpdateService updateService;
     @ViewComponent
     private JmixButton disableButton;
+    @ViewComponent
+    private JmixButton enableButton;
+    @ViewComponent
+    private JmixButton startButton;
+    @ViewComponent
+    private JmixButton stopButton;
 
     @Subscribe
     public void onInit(final InitEvent event) {
@@ -86,6 +92,46 @@ public class PluginListView extends StandardListView<Plugin> {
             }).setHeader(messages.getMessage("required"));
         }
     }
+
+    @Subscribe
+    public void onBeforeShow(final BeforeShowEvent event) {
+        setActionsVisibility();
+        setButtonVisibility();
+    }
+
+    /**
+     * Configures the visibility of action buttons in the UI based on the current user's permissions.
+     *
+     * This method uses the {@code pluginService.isPermitted} logic to determine if the user
+     * has access to specific actions and adjusts the visibility of the corresponding buttons.
+     *
+     * Buttons affected by this method include:
+     * - {@code disableButton}: Determines if the "Disable" action is permitted.
+     * - {@code enableButton}: Determines if the "Enable" action is permitted.
+     * - {@code startButton}: Determines if the "Start" action is permitted.
+     * - {@code stopButton}: Determines if the "Stop" action is permitted.
+     *
+     * The visibility of each button is updated accordingly.
+     */
+    private void setButtonVisibility() {
+        disableButton.setVisible(pluginService.isPermitted("disable"));
+        enableButton.setVisible(pluginService.isPermitted("enable"));
+        startButton.setVisible(pluginService.isPermitted("start"));
+        stopButton.setVisible(pluginService.isPermitted("stop"));
+    }
+
+    /**
+     * Configures the visibility of specific actions for the plugins data grid
+     * based on the current user's permissions.
+     *
+     * This method uses the `pluginService.isPermitted` logic to determine*/
+    private void setActionsVisibility() {
+        pluginsDataGrid.getAction("disable").setVisible(pluginService.isPermitted("disable"));
+        pluginsDataGrid.getAction("enable").setVisible(pluginService.isPermitted("enable"));
+        pluginsDataGrid.getAction("start").setVisible(pluginService.isPermitted("start"));
+        pluginsDataGrid.getAction("stop").setVisible(pluginService.isPermitted("stop"));
+    }
+
 
     /**
      * Determines the color theme associated with a given {@link PluginState}.
