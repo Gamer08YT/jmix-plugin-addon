@@ -54,7 +54,9 @@ plugins.version.exact=true
 
 ## Screenshots
 
-![img.png](img.png)
+![img.png](list-view.png)
+
+![img_1.png](detail-view.png)
 
 Shield: [![CC BY-NC 4.0][cc-by-nc-shield]][cc-by-nc]
 
