@@ -2,6 +2,7 @@ package de.bytestore.plugin.view.actions;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
@@ -10,8 +11,7 @@ import io.jmix.flowui.view.MessageBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ActionType("disablePlugin")
-public class DisableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.entity.Plugin> {
-    @Autowired
+public class DisableAction<E> extends ItemTrackingAction<E> {
     private MessageBundle messageBundle;
 
     @Autowired
@@ -20,16 +20,24 @@ public class DisableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugi
     @Autowired
     private PluginService pluginService;
 
+    @Autowired
+    protected void setMessages(MessageBundle messageBundle) {
+        this.messageBundle = messageBundle;
+        this.messageBundle.setMessageGroup("de.bytestore.plugin.view.actions");
+
+        setText(messageBundle.getMessage("disable"));
+    }
+
+
     public DisableAction(String id) {
         super(id);
-        setText(messageBundle.getMessage("disable"));
         setIcon(VaadinIcon.LOCK.create());
     }
 
     @Override
     public void actionPerform(Component componentIO) {
         if (getTarget() != null) {
-            de.bytestore.plugin.entity.Plugin selectedIO = getTarget().getSingleSelectedItem();
+            Plugin selectedIO = (de.bytestore.plugin.entity.Plugin) getTarget().getSingleSelectedItem();
 
             if (selectedIO != null) {
                 if (pluginService.disablePlugin(selectedIO.getId()))

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import de.bytestore.plugin.service.PluginService;
+import io.jmix.core.Messages;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
 import io.jmix.flowui.action.list.ItemTrackingAction;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StartAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.entity.Plugin> {
     private static final Logger log = LoggerFactory.getLogger(StartAction.class);
 
-    @Autowired
     private MessageBundle messageBundle;
 
     @Autowired
@@ -27,9 +27,18 @@ public class StartAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.
 
     public StartAction(String id) {
         super(id);
-        setText(messageBundle.getMessage("start"));
+        //setText(messageBundle.getMessage("start"));
         setIcon(VaadinIcon.PLAY.create());
     }
+
+    @Autowired
+    protected void setMessages(MessageBundle messageBundle) {
+        this.messageBundle = messageBundle;
+        this.messageBundle.setMessageGroup("de.bytestore.plugin.view.actions");
+
+        setText(messageBundle.getMessage("start"));
+    }
+
 
     @Override
     public void actionPerform(Component componentIO) {

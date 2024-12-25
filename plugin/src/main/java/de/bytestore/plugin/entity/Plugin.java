@@ -1,15 +1,17 @@
 package de.bytestore.plugin.entity;
 
+import io.jmix.core.entity.annotation.JmixId;
 import io.jmix.core.metamodel.annotation.InstanceName;
 import io.jmix.core.metamodel.annotation.JmixEntity;
 
 @JmixEntity(name = "plugin_Plugin")
 public class Plugin {
-
+    @JmixId
+    @InstanceName
     private String id;
 
     private String path;
-    @InstanceName
+
     private String description;
 
     private String version;
@@ -85,5 +87,4 @@ public class Plugin {
     public void setId(String id) {
         this.id = id;
     }
-
 }

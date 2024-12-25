@@ -21,6 +21,10 @@
     <layout>
         <hbox id="buttonsPanel" classNames="buttons-panel">
             <button id="editButton" action="pluginsDataGrid.edit"/>
+            <button id="disableButton" action="pluginsDataGrid.disable"/>
+            <button id="enableButton" action="pluginsDataGrid.enable"/>
+            <button id="stopButton" action="pluginsDataGrid.stop"/>
+            <button id="startButton" action="pluginsDataGrid.start"/>
             <button id="refreshButton" action="pluginsDataGrid.refresh"/>
             <simplePagination id="pagination" dataLoader="pluginsDl"/>
         </hbox>

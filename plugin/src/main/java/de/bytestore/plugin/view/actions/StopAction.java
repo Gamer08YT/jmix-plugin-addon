@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StopAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.entity.Plugin> {
     private static final Logger log = LoggerFactory.getLogger(StopAction.class);
 
-    @Autowired
     private MessageBundle messageBundle;
 
     @Autowired
@@ -26,9 +25,18 @@ public class StopAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.e
 
     public StopAction(String id) {
         super(id);
-        setText(messageBundle.getMessage("stop"));
+        //setText(messageBundle.getMessage("stop"));
         setIcon(VaadinIcon.STOP.create());
     }
+
+    @Autowired
+    protected void setMessages(MessageBundle messageBundle) {
+        this.messageBundle = messageBundle;
+        this.messageBundle.setMessageGroup("de.bytestore.plugin.view.actions");
+
+        setText(messageBundle.getMessage("stop"));
+    }
+
 
     @Override
     public void actionPerform(Component componentIO) {

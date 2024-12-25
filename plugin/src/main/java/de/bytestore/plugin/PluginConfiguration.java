@@ -37,6 +37,7 @@ public class PluginConfiguration {
         final ActionsConfiguration actions
                 = new ActionsConfiguration(applicationContext, metadataReaderFactory);
         actions.setBasePackages(Collections.singletonList("de.bytestore.plugin"));
+
         return actions;
     }
 }

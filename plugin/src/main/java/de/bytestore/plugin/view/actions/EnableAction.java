@@ -3,16 +3,15 @@ package de.bytestore.plugin.view.actions;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import de.bytestore.plugin.service.PluginService;
+import io.jmix.core.Messages;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
 import io.jmix.flowui.action.list.ItemTrackingAction;
 import io.jmix.flowui.view.MessageBundle;
 import org.springframework.beans.factory.annotation.Autowired;
-import de.bytestore.plugin.entity.Plugin;
 
 @ActionType("enablePlugin")
 public class EnableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.entity.Plugin> {
-    @Autowired
     private MessageBundle messageBundle;
 
     @Autowired
@@ -23,9 +22,18 @@ public class EnableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin
 
     public EnableAction(String id) {
         super(id);
-        setText(messageBundle.getMessage("enable"));
+        //setText(messageBundle.getMessage("enable"));
         setIcon(VaadinIcon.UNLOCK.create());
     }
+
+    @Autowired
+    protected void setMessages(MessageBundle messageBundle) {
+        this.messageBundle = messageBundle;
+        this.messageBundle.setMessageGroup("de.bytestore.plugin.view.actions");
+
+        setText(messageBundle.getMessage("enable"));
+    }
+
 
     @Override
     public void actionPerform(Component componentIO) {

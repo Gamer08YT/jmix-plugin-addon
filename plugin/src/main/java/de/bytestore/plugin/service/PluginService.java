@@ -1,6 +1,7 @@
 package de.bytestore.plugin.service;
 
 import de.bytestore.plugin.entity.Plugin;
+import io.jmix.core.DataManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPluginManager;
@@ -33,6 +34,8 @@ import java.util.List;
 @Service
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
+    @Autowired
+    protected DataManager dataManager;
 
     @Autowired
     private SpringPluginManager managerIO;
@@ -205,6 +208,8 @@ public class PluginService {
             listIO.add(this.castPlugin(pluginWrapper));
         }
 
+        listIO.add(new DummyPlugin());
+
         return listIO;
     }
 
@@ -215,7 +220,7 @@ public class PluginService {
      * @return a Plugin object containing the mapped properties from the PluginWrapper
      */
     public Plugin castPlugin(PluginWrapper pluginWrapper) {
-        Plugin pluginIO = new Plugin();
+        Plugin pluginIO = dataManager.create(Plugin.class);
 
         pluginIO.setId(pluginWrapper.getPluginId());
         pluginIO.setPath(pluginWrapper.getPluginPath().toString());
@@ -243,3 +248,31 @@ public class PluginService {
         return null;
     }
 }
+
+class DummyPlugin extends Plugin {
+    @Override
+    public de.bytestore.plugin.entity.PluginState getState() {
+        return de.bytestore.plugin.entity.PluginState.STARTED;
+    }
+
+    @Override
+    public String getDescription() {
+        return "This is a Dummy Plugin.";
+    }
+
+    @Override
+    public String getId() {
+        return "dummy";
+    }
+
+    @Override
+    public String getPath() {
+        return "./plugins/dummy.jar";
+    }
+
+    @Override
+    public String getVersion() {
+        return "1.0.0-SNAPSHOT";
+    }
+}
+
