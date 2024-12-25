@@ -2,6 +2,7 @@ package de.bytestore.plugin.view.actions;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.core.Messages;
 import io.jmix.flowui.Notifications;
@@ -42,9 +43,9 @@ public class EnableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin
 
             if (selectedIO != null) {
                 if (pluginService.enablePlugin(selectedIO.getId()))
-                    notifications.create(messageBundle.formatMessage("pluginEnabled", selectedIO.getId())).withType(Notifications.Type.SUCCESS).show();
+                    notifications.create(messageBundle.formatMessage("pluginEnabled", selectedIO.getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
                 else
-                    notifications.create(messageBundle.formatMessage("pluginEnableFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).show();
+                    notifications.create(messageBundle.formatMessage("pluginEnableFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
             }
         }
     }

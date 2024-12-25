@@ -2,6 +2,7 @@ package de.bytestore.plugin.view.actions;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
@@ -46,9 +47,9 @@ public class StopAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.e
             if (selectedIO != null) {
                 try {
                     pluginService.stopPlugin(selectedIO.getId());
-                    notifications.create(messageBundle.formatMessage("pluginStopped", selectedIO.getId())).withType(Notifications.Type.SUCCESS).show();
+                    notifications.create(messageBundle.formatMessage("pluginStopped", selectedIO.getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
                 } catch (Exception e) {
-                    notifications.create(messageBundle.formatMessage("pluginStopFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).show();
+                    notifications.create(messageBundle.formatMessage("pluginStopFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
                     log.error("Unable to Stop Plugin: {}.", selectedIO.getId(), e);
                 }

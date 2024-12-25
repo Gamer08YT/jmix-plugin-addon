@@ -2,6 +2,7 @@ package de.bytestore.plugin.view.actions;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.flowui.Notifications;
@@ -41,9 +42,9 @@ public class DisableAction<E> extends ItemTrackingAction<E> {
 
             if (selectedIO != null) {
                 if (pluginService.disablePlugin(selectedIO.getId()))
-                    notifications.create(messageBundle.formatMessage("pluginDisabled", selectedIO.getId())).withType(Notifications.Type.SUCCESS).show();
+                    notifications.create(messageBundle.formatMessage("pluginDisabled", selectedIO.getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
                 else
-                    notifications.create(messageBundle.formatMessage("pluginDisableFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).show();
+                    notifications.create(messageBundle.formatMessage("pluginDisableFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
             }
         }
     }

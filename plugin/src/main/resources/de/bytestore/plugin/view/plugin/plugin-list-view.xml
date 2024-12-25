@@ -42,6 +42,9 @@
                 <action id="refresh" type="list_refresh"/>
             </actions>
             <columns resizable="true">
+                <column property="id"/>
+                <column property="version"/>
+                <column property="path"/>
             </columns>
         </dataGrid>
         <hbox id="lookupActions" visible="false">

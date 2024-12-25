@@ -208,9 +208,24 @@ public class PluginService {
             listIO.add(this.castPlugin(pluginWrapper));
         }
 
-        listIO.add(new DummyPlugin());
+        listIO.add(getDummyPlugin());
 
         return listIO;
+    }
+
+    private Plugin getDummyPlugin() {
+        Plugin pluginIO = dataManager.create(Plugin.class);
+
+        pluginIO.setId("dummy");
+        pluginIO.setDescription("Dummy Plugin");
+        pluginIO.setState(de.bytestore.plugin.entity.PluginState.STARTED);
+        pluginIO.setVersion("1.0.0");
+        pluginIO.setPath("./plugins/dummy.jar");
+        pluginIO.setLicense("Apache 2.0");
+        pluginIO.setProvider("ByteStore");
+        pluginIO.setRequires("1.0.0");
+
+        return pluginIO;
     }
 
     /**
@@ -246,33 +261,6 @@ public class PluginService {
         }
 
         return null;
-    }
-}
-
-class DummyPlugin extends Plugin {
-    @Override
-    public de.bytestore.plugin.entity.PluginState getState() {
-        return de.bytestore.plugin.entity.PluginState.STARTED;
-    }
-
-    @Override
-    public String getDescription() {
-        return "This is a Dummy Plugin.";
-    }
-
-    @Override
-    public String getId() {
-        return "dummy";
-    }
-
-    @Override
-    public String getPath() {
-        return "./plugins/dummy.jar";
-    }
-
-    @Override
-    public String getVersion() {
-        return "1.0.0-SNAPSHOT";
     }
 }
 

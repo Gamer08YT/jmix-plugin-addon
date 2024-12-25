@@ -3,6 +3,7 @@ package de.bytestore.plugin.view.actions;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.core.Messages;
 import io.jmix.flowui.Notifications;
@@ -48,9 +49,9 @@ public class StartAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.
             if (selectedIO != null) {
                 try {
                     pluginService.stopPlugin(selectedIO.getId());
-                    notifications.create(messageBundle.formatMessage("pluginStarted", selectedIO.getId())).withType(Notifications.Type.SUCCESS).show();
+                    notifications.create(messageBundle.formatMessage("pluginStarted", selectedIO.getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
                 } catch (Exception e) {
-                    notifications.create(messageBundle.formatMessage("pluginStartFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).show();
+                    notifications.create(messageBundle.formatMessage("pluginStartFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
                     log.error("Unable to Start Plugin: {}.", selectedIO.getId(), e);
                 }
