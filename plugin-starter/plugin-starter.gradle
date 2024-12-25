@@ -1,4 +1,4 @@
-archivesBaseName = 'jmix-plugin-starter'
+archivesBaseName = 'plugin-starter'
 
 jmix {
     entitiesEnhancing {
@@ -7,7 +7,7 @@ jmix {
 }
 
 dependencies {
-    api project(':jmix-plugin')
+    api project(':plugin')
 
     implementation 'io.jmix.core:jmix-core'
     implementation 'io.jmix.data:jmix-data'

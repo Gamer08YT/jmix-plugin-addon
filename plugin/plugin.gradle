@@ -1,4 +1,4 @@
-archivesBaseName = 'jmix-plugin'
+archivesBaseName = 'plugin'
 
 dependencies {
     implementation 'io.jmix.core:jmix-core-starter'
