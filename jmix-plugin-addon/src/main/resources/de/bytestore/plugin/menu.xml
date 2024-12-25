@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<menu-config xmlns="http://jmix.io/schema/flowui/menu">
+
+    <menu id="plugin" title="msg://de.bytestore.plugin/menu.addon">
+        <item view="plugin_Plugin.list" title="msg://de.bytestore.plugin.view.plugin/pluginListView.title"/>
+    </menu>
+
+</menu-config>

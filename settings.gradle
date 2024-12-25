@@ -1,0 +1,8 @@
+rootProject.name = 'jmix-plugin-addon-addon'
+
+include 'jmix-plugin-addon'
+include 'jmix-plugin-addon-starter'
+
+rootProject.children.each { p1 ->
+    p1.buildFileName = "${p1.name}.gradle"
+}
