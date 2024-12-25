@@ -1,10 +1,12 @@
 package de.bytestore.plugin.view.plugin;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.core.LoadContext;
 import io.jmix.core.SaveContext;
+import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,4 +40,11 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
         Plugin saved = entity;
         return Set.of(saved);
     }
+
+    @Subscribe(id = "downloadButton", subject = "clickListener")
+    public void onDownloadButtonClick(final ClickEvent<JmixButton> event) {
+        pluginService.downloadPlugin(getEditedEntity());
+    }
+
+
 }

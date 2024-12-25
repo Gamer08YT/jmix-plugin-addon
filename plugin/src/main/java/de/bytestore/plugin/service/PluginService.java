@@ -2,11 +2,13 @@ package de.bytestore.plugin.service;
 
 import de.bytestore.plugin.entity.Plugin;
 import io.jmix.core.DataManager;
+import io.jmix.flowui.download.Downloader;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +41,7 @@ import java.util.List;
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
     private final UpdateService updateService;
+    private final ObjectProvider<Downloader> downloaderProvider;
     @Autowired
     protected DataManager dataManager;
 
@@ -47,9 +53,12 @@ public class PluginService {
 
     @Autowired
     private ApplicationContext context;
+    @Autowired
+    private Downloader downloader;
 
-    public PluginService(UpdateService updateService) {
+    public PluginService(UpdateService updateService, ObjectProvider<Downloader> downloaderProvider) {
         this.updateService = updateService;
+        this.downloaderProvider = downloaderProvider;
     }
 
     /**
@@ -221,22 +230,31 @@ public class PluginService {
             listIO.add(this.castPlugin(pluginWrapper));
         }
 
-        listIO.add(getDummyPlugin());
+        listIO.add(getDummyPlugin("proxmox", "0.9.0"));
+        listIO.add(getDummyPlugin("docker", "1.0.1"));
+        listIO.add(getDummyPlugin("paypal", "2.0.0"));
 
         return listIO;
     }
 
-    private Plugin getDummyPlugin() {
+    /**
+     * Creates and returns a dummy plugin with preset values and the specified parameters.
+     *
+     * @param nameIO the identifier for the plugin being created
+     * @param versionIO the required version for the plugin
+     * @return a dummy Plugin instance with predefined properties
+     */
+    private Plugin getDummyPlugin(String nameIO, String versionIO) {
         Plugin pluginIO = dataManager.create(Plugin.class);
 
-        pluginIO.setId("dummy");
+        pluginIO.setId(nameIO);
         pluginIO.setDescription("Dummy Plugin");
         pluginIO.setState(de.bytestore.plugin.entity.PluginState.STARTED);
         pluginIO.setVersion("1.0.0");
         pluginIO.setPath("./plugins/dummy.jar");
         pluginIO.setLicense("Apache 2.0");
         pluginIO.setProvider("ByteStore");
-        pluginIO.setRequires("1.0.0");
+        pluginIO.setRequires(versionIO);
 
         return pluginIO;
     }
@@ -270,7 +288,8 @@ public class PluginService {
      */
     public Plugin getPluginCasted(Object id) {
         if (id instanceof String) {
-            return castPlugin(getPlugin((String) id));
+            return getDummyPlugin("proxmox", "1.0.0");
+            //return castPlugin(getPlugin((String) id));
         }
 
         return null;
@@ -284,7 +303,24 @@ public class PluginService {
      * @implNote https://github.com/pf4j/pf4j/blob/d763024aac175c2a5c3bedadc2986dd2111db65b/pf4j/src/main/java/org/pf4j/DependencyResolver.java#L142
      */
     public boolean isOutdated(Plugin pluginIO) {
-        return managerIO.getVersionManager().checkVersionConstraint(pluginIO.getVersion(), updateService.getVersion());
+        return !managerIO.getVersionManager().checkVersionConstraint(pluginIO.getRequires(), updateService.getVersion());
+    }
+
+    public void downloadPlugin(Plugin pluginIO) {
+        File fileIO = new File(pluginIO.getPath());
+        String nameIO = fileIO.getName();
+
+        try {
+            if (fileIO.exists()) {
+                // Read File into Stream.
+                FileInputStream inputStream = new FileInputStream(fileIO);
+
+                // Upload File to Client.
+                downloader.download(() -> inputStream, nameIO);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

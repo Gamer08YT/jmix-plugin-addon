@@ -31,6 +31,7 @@
         </formLayout>
         <hbox id="detailActions">
             <button id="closeButton" action="closeAction"/>
+            <button id="downloadButton" icon="lumo:download" text="msg://download"/>
         </hbox>
     </layout>
 </view>

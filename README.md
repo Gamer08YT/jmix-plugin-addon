@@ -5,7 +5,7 @@ injected via PF4J.
 
 The addon allows you to load/unload and deactivate plugins.
 
-## Installation:
+## Installation
 
 1. Add Maven Dependencies to your `build.gradle`.
     ```groovy
@@ -13,6 +13,48 @@ The addon allows you to load/unload and deactivate plugins.
     implementation 'de.bytestore:plugin-starter' 
     ```
 2. Add `xmlns:app="http://byte-store.de/schema/app-ui-components"` to your View Descriptor.
+
+## Features
+
+### Plugin Auto-loading
+
+To disable Plugin Auto-loading, you need to add this line to your `application.properties`.
+
+You than can control the loading via the `PluginService`.
+
+```properties
+plugins.autoload=false
+```
+
+### Change Plugin Directory
+
+To change Plugin Directory, you need to add this line to your `application.properties`.
+
+```properties
+plugins.home=./test/plugins
+```
+
+### Semantic Version Check
+
+To disable globally semantic version checking, you need to add this line to your `application.properties`.
+
+This will hide the required Field in the List UI and disables Version checking via PF4J.
+
+```properties
+plugins.version.check=false
+```
+
+### Exact Version Check
+
+To enable exact version checks, you need to add this line to your `application.properties`.
+
+```properties
+plugins.version.exact=true
+```
+
+## Screenshots
+
+![img.png](img.png)
 
 Shield: [![CC BY-NC 4.0][cc-by-nc-shield]][cc-by-nc]
 
