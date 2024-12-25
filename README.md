@@ -1,7 +1,7 @@
 # JMIX Plugin Addon
 
-Das JMIX Plugin Addon erlaubt es eigene Plugins für JMIX zu schreiben die nicht im Source Code verankert sind, sondern
-über PF4J injected werden.
+The JMIX Plugin Addon allows you to write your own plugins for JMIX that are not anchored in the source code, but are
+injected via PF4J.
 
 The addon allows you to load/unload and deactivate plugins.
 
