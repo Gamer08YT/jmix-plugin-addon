@@ -1,11 +1,12 @@
 package de.bytestore.plugin.view.actions;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.data.selection.SelectionEvent;
+import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.entity.PluginState;
 import de.bytestore.plugin.service.PluginService;
-import io.jmix.core.Messages;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
 import io.jmix.flowui.action.list.ItemTrackingAction;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ActionType("startPlugin")
-public class StartAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.entity.Plugin> {
+public class StartAction<E> extends ItemTrackingAction<E> {
     private static final Logger log = LoggerFactory.getLogger(StartAction.class);
 
     private MessageBundle messageBundle;
@@ -40,11 +41,22 @@ public class StartAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.
         setText(messageBundle.getMessage("start"));
     }
 
+    @Override
+    protected void onSelectionChange(SelectionEvent<?, E> event) {
+        super.onSelectionChange(event);
+
+        event.getFirstSelectedItem().ifPresent(item -> {
+            if (item instanceof de.bytestore.plugin.entity.Plugin) {
+                setEnabled(((de.bytestore.plugin.entity.Plugin) item).getState() != PluginState.STARTED);
+            }
+        });
+    }
+
 
     @Override
     public void actionPerform(Component componentIO) {
         if (getTarget() != null) {
-            de.bytestore.plugin.entity.Plugin selectedIO = getTarget().getSingleSelectedItem();
+            de.bytestore.plugin.entity.Plugin selectedIO = (Plugin) getTarget().getSingleSelectedItem();
 
             if (selectedIO != null) {
                 try {

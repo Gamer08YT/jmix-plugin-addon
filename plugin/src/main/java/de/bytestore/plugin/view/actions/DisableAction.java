@@ -3,7 +3,9 @@ package de.bytestore.plugin.view.actions;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.data.selection.SelectionEvent;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.entity.PluginState;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
@@ -33,6 +35,17 @@ public class DisableAction<E> extends ItemTrackingAction<E> {
     public DisableAction(String id) {
         super(id);
         setIcon(VaadinIcon.LOCK.create());
+    }
+
+    @Override
+    protected void onSelectionChange(SelectionEvent<?, E> event) {
+        super.onSelectionChange(event);
+
+        event.getFirstSelectedItem().ifPresent(item -> {
+            if (item instanceof de.bytestore.plugin.entity.Plugin) {
+                setEnabled(((Plugin) item).getState() != PluginState.DISABLED);
+            }
+        });
     }
 
     @Override

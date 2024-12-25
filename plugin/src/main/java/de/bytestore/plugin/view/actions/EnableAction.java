@@ -3,8 +3,9 @@ package de.bytestore.plugin.view.actions;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.data.selection.SelectionEvent;
+import de.bytestore.plugin.entity.PluginState;
 import de.bytestore.plugin.service.PluginService;
-import io.jmix.core.Messages;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
 import io.jmix.flowui.action.list.ItemTrackingAction;
@@ -12,7 +13,7 @@ import io.jmix.flowui.view.MessageBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ActionType("enablePlugin")
-public class EnableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin.entity.Plugin> {
+public class EnableAction<E> extends ItemTrackingAction<E> {
     private MessageBundle messageBundle;
 
     @Autowired
@@ -35,11 +36,22 @@ public class EnableAction<Plugin> extends ItemTrackingAction<de.bytestore.plugin
         setText(messageBundle.getMessage("enable"));
     }
 
+    @Override
+    protected void onSelectionChange(SelectionEvent<?, E> event) {
+        super.onSelectionChange(event);
+
+        event.getFirstSelectedItem().ifPresent(item -> {
+            if (item instanceof de.bytestore.plugin.entity.Plugin) {
+                setEnabled(((de.bytestore.plugin.entity.Plugin) item).getState() == PluginState.DISABLED);
+            }
+        });
+    }
+
 
     @Override
     public void actionPerform(Component componentIO) {
         if (getTarget() != null) {
-            de.bytestore.plugin.entity.Plugin selectedIO = getTarget().getSingleSelectedItem();
+            de.bytestore.plugin.entity.Plugin selectedIO = (de.bytestore.plugin.entity.Plugin) getTarget().getSingleSelectedItem();
 
             if (selectedIO != null) {
                 if (pluginService.enablePlugin(selectedIO.getId()))
