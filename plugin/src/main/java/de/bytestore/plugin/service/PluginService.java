@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import java.util.List;
 @Service
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
+    private final UpdateService updateService;
     @Autowired
     protected DataManager dataManager;
 
@@ -45,6 +47,10 @@ public class PluginService {
 
     @Autowired
     private ApplicationContext context;
+
+    public PluginService(UpdateService updateService) {
+        this.updateService = updateService;
+    }
 
     /**
      * Handles the {@link ApplicationStartedEvent} triggered when the application has started.
@@ -71,6 +77,13 @@ public class PluginService {
         this.checkDirectory();
 
         log.info("Loading plugins...");
+
+        // Set Version if Version Check is enabled.
+        if (updateService.isVersionCheck())
+            managerIO.setSystemVersion(updateService.getVersion());
+
+        // Enable or Disable Exact Version Mode. 1.1.0 === 1.1.0
+        managerIO.setExactVersionAllowed(updateService.isExactVersionAllowed());
 
         // Set Spring Context for Plugin Manager.
         managerIO.setApplicationContext(context);
@@ -202,7 +215,7 @@ public class PluginService {
      *         associated with the current instance.
      */
     public List<Plugin> castPlugins() {
-        List listIO = new java.util.ArrayList<>();
+        List listIO = new ArrayList<>();
 
         for (PluginWrapper pluginWrapper : this.getPlugins()) {
             listIO.add(this.castPlugin(pluginWrapper));
@@ -261,6 +274,17 @@ public class PluginService {
         }
 
         return null;
+    }
+
+    /**
+     * Checks if the given plugin is outdated by comparing its version with the current version provided by the update service.
+     *
+     * @param pluginIO the plugin object whose version is to be checked
+     * @return true if the plugin is outdated, false otherwise
+     * @implNote https://github.com/pf4j/pf4j/blob/d763024aac175c2a5c3bedadc2986dd2111db65b/pf4j/src/main/java/org/pf4j/DependencyResolver.java#L142
+     */
+    public boolean isOutdated(Plugin pluginIO) {
+        return managerIO.getVersionManager().checkVersionConstraint(pluginIO.getVersion(), updateService.getVersion());
     }
 }
 

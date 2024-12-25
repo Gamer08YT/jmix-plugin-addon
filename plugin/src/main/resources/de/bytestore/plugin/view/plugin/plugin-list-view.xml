@@ -44,6 +44,7 @@
             <columns resizable="true">
                 <column property="id"/>
                 <column property="version"/>
+                <column property="provider"/>
                 <column property="path"/>
             </columns>
         </dataGrid>

@@ -1,6 +1,7 @@
 package de.bytestore.plugin.view.plugin;
 
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.service.PluginService;
@@ -21,10 +22,15 @@ public class PluginListView extends StandardListView<Plugin> {
 
     @Autowired
     private PluginService pluginService;
+
     @ViewComponent
     private DataGrid<Plugin> pluginsDataGrid;
+
     @Autowired
     private Messages messages;
+
+    @ViewComponent
+    private MessageBundle messageBundle;
 
     @Subscribe
     public void onInit(final InitEvent event) {
@@ -35,7 +41,33 @@ public class PluginListView extends StandardListView<Plugin> {
             spanIO.getElement().getThemeList().add("badge");
 
             return spanIO;
-        }).setHeader(messages.getMessage("state"));
+        }).setHeader(messageBundle.getMessage("state"));
+
+        pluginsDataGrid.addComponentColumn(plugin -> {
+            String colorIO = "error";
+            Span spanIO = new Span();
+
+            // Add Badge Theme.
+            spanIO.getElement().getThemeList().add("badge");
+
+            if (!plugin.getRequires().isEmpty()) {
+                // Add Description Tooltip.
+                Tooltip.forComponent(spanIO).withText(messageBundle.formatMessage("requiredVersion", plugin.getRequires()));
+
+                // Set Min Version.
+                spanIO.setText(messages.getMessage(plugin.getState()));
+
+            } else {
+                colorIO = "success";
+
+                spanIO.setText(messageBundle.getMessage("requiredVersionNone"));
+            }
+
+            // Add Badge Color.
+            spanIO.getElement().getThemeList().add(colorIO);
+
+            return spanIO;
+        }).setHeader(messages.getMessage("required"));
     }
 
     @Install(to = "pluginsDl", target = Target.DATA_LOADER)
