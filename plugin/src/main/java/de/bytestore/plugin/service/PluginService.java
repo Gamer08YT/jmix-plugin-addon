@@ -230,9 +230,11 @@ public class PluginService {
             listIO.add(this.castPlugin(pluginWrapper));
         }
 
-        listIO.add(getDummyPlugin("proxmox", "0.9.0", de.bytestore.plugin.entity.PluginState.FAILED));
-        listIO.add(getDummyPlugin("docker", "1.0.1", de.bytestore.plugin.entity.PluginState.STARTED));
-        listIO.add(getDummyPlugin("paypal", "2.0.0", de.bytestore.plugin.entity.PluginState.STOPPED));
+        if (this.isDummyMode()) {
+            listIO.add(getDummyPlugin("proxmox", "0.9.0", de.bytestore.plugin.entity.PluginState.FAILED));
+            listIO.add(getDummyPlugin("docker", "1.0.1", de.bytestore.plugin.entity.PluginState.STARTED));
+            listIO.add(getDummyPlugin("paypal", "2.0.0", de.bytestore.plugin.entity.PluginState.STOPPED));
+        }
 
         return listIO;
     }
@@ -257,6 +259,18 @@ public class PluginService {
         pluginIO.setRequires(versionIO);
 
         return pluginIO;
+    }
+
+    /**
+     * Checks if the application is running in dummy mode.
+     *
+     * The method retrieves the property value associated with "plugins.dummy"
+     * and returns it as a boolean. If the property is not defined, it defaults to false.
+     *
+     * @return true if dummy mode is enabled, false otherwise
+     */
+    public boolean isDummyMode() {
+        return environment.getProperty("plugins.dummy", Boolean.class, false);
     }
 
     /**
@@ -288,8 +302,10 @@ public class PluginService {
      */
     public Plugin getPluginCasted(Object id) {
         if (id instanceof String) {
-            return getDummyPlugin("proxmox", "1.0.0", de.bytestore.plugin.entity.PluginState.STARTED);
-            //return castPlugin(getPlugin((String) id));
+            if (this.isDummyMode())
+                return getDummyPlugin("proxmox", "1.0.0", de.bytestore.plugin.entity.PluginState.STARTED);
+            else
+                return castPlugin(getPlugin((String) id));
         }
 
         return null;
