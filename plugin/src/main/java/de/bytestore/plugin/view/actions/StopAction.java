@@ -39,6 +39,7 @@ public class StopAction<E> extends ItemTrackingAction<E> {
         this.messageBundle.setMessageGroup("de.bytestore.plugin.view.actions");
 
         setText(messageBundle.getMessage("stop"));
+        setVisibleByUiPermissions(true);
     }
 
     @Override

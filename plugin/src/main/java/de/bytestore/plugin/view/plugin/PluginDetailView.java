@@ -20,6 +20,13 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @Autowired
     private PluginService pluginService;
+    @ViewComponent
+    private JmixButton downloadButton;
+
+    @Subscribe
+    public void onBeforeShow(final BeforeShowEvent event) {
+        downloadButton.setVisible(pluginService.isPermitted("downloadPlugin"));
+    }
 
 
     @Install(to = "pluginDl", target = Target.DATA_LOADER)

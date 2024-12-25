@@ -1,7 +1,9 @@
 package de.bytestore.plugin.service;
 
 import de.bytestore.plugin.entity.Plugin;
+import io.jmix.core.AccessManager;
 import io.jmix.core.DataManager;
+import io.jmix.core.accesscontext.SpecificOperationAccessContext;
 import io.jmix.flowui.download.Downloader;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
@@ -20,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,6 +43,7 @@ public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
     private final UpdateService updateService;
     private final ObjectProvider<Downloader> downloaderProvider;
+    private final AccessManager accessManager;
     @Autowired
     protected DataManager dataManager;
 
@@ -56,9 +58,10 @@ public class PluginService {
     @Autowired
     private Downloader downloader;
 
-    public PluginService(UpdateService updateService, ObjectProvider<Downloader> downloaderProvider) {
+    public PluginService(UpdateService updateService, ObjectProvider<Downloader> downloaderProvider, AccessManager accessManager) {
         this.updateService = updateService;
         this.downloaderProvider = downloaderProvider;
+        this.accessManager = accessManager;
     }
 
     /**
@@ -337,6 +340,24 @@ public class PluginService {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Determines if the specified permission is allowed based on the defined constraints
+     * and access control rules.
+     *
+     * @param permissionIO the identifier for the permission to be checked, which is used
+     *        to construct the operation access context.
+     * @return true if the specified permission is permitted, false otherwise.
+     */
+    public boolean isPermitted(String permissionIO) {
+        SpecificOperationAccessContext activityContext =
+                new SpecificOperationAccessContext("plugins." + permissionIO);
+
+        accessManager.applyRegisteredConstraints(activityContext);
+
+
+        return activityContext.isPermitted();
     }
 }
 

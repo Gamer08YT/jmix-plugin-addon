@@ -10,6 +10,7 @@ import de.bytestore.plugin.service.UpdateService;
 import io.jmix.core.LoadContext;
 import io.jmix.core.Messages;
 import io.jmix.flowui.component.grid.DataGrid;
+import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,6 +36,8 @@ public class PluginListView extends StandardListView<Plugin> {
     private MessageBundle messageBundle;
     @Autowired
     private UpdateService updateService;
+    @ViewComponent
+    private JmixButton disableButton;
 
     @Subscribe
     public void onInit(final InitEvent event) {
@@ -84,6 +87,15 @@ public class PluginListView extends StandardListView<Plugin> {
         }
     }
 
+    /**
+     * Determines the color theme associated with a given {@link PluginState}.
+     * Each {@code PluginState} maps to a specific string representation of a theme color.
+     *
+     * @param stateIO the state of the plugin for which a corresponding color is required.
+     * @return a string representing the color associated with the provided {@code PluginState}.
+     *         Returns "success" for STARTED, "error" for FAILED, "contrast" for DISABLED,
+     *         and "normal" for any other states.
+     */
     private String getStateColor(PluginState stateIO) {
         switch (stateIO) {
             case STARTED -> {

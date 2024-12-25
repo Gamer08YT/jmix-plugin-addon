@@ -31,6 +31,7 @@ public class StartAction<E> extends ItemTrackingAction<E> {
         super(id);
         //setText(messageBundle.getMessage("start"));
         setIcon(VaadinIcon.PLAY.create());
+        setVisibleByUiPermissions(true);
     }
 
     @Autowired

@@ -26,6 +26,7 @@ public class EnableAction<E> extends ItemTrackingAction<E> {
         super(id);
         //setText(messageBundle.getMessage("enable"));
         setIcon(VaadinIcon.UNLOCK.create());
+        setVisibleByUiPermissions(true);
     }
 
     @Autowired
