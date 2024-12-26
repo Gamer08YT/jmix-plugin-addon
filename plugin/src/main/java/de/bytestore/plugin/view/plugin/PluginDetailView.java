@@ -130,7 +130,7 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
                 notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
 
                 // Navigate to Plugin Overview.
-                viewNavigators.listView(this, PluginListView.class).navigate();
+                viewNavigators.view(this, PluginListView.class).navigate();
             } else
                 notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
