@@ -23,7 +23,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 public class JmixPlugin extends SpringPlugin {
     // Store Annotation Config Context.
-    private AnnotationConfigApplicationContext contextIO = new AnnotationConfigApplicationContext();
+    private final AnnotationConfigApplicationContext contextIO = new AnnotationConfigApplicationContext();
 
     public JmixPlugin(PluginWrapper wrapper) {
         super(wrapper);
