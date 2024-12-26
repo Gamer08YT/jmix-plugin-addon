@@ -27,6 +27,21 @@ configurations.implementation {
     exclude group: 'com.vaadin', module: 'copilot'
 }
 
+jar {
+    // Füge nur die Inhalte von org.pf4j hinzu
+    from {
+        configurations.runtimeClasspath.filter {
+            it.name.contains('pf4j') || it.name.contains('semver')
+        }.collect {
+            zipTree(it)
+        }
+    }
+
+    // Strategy verhindert Fehler durch doppelte Dateien
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+
 test {
     useJUnitPlatform()
 }
