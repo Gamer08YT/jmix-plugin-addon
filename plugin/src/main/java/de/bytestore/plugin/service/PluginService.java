@@ -41,9 +41,13 @@ import java.util.List;
 @Service
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
-    private final UpdateService updateService;
-    private final ObjectProvider<Downloader> downloaderProvider;
-    private final AccessManager accessManager;
+
+    @Autowired
+    private UpdateService updateService;
+
+    @Autowired
+    private AccessManager accessManager;
+
     @Autowired
     protected DataManager dataManager;
 
@@ -55,14 +59,9 @@ public class PluginService {
 
     @Autowired
     private ApplicationContext context;
+
     @Autowired
     private Downloader downloader;
-
-    public PluginService(UpdateService updateService, ObjectProvider<Downloader> downloaderProvider, AccessManager accessManager) {
-        this.updateService = updateService;
-        this.downloaderProvider = downloaderProvider;
-        this.accessManager = accessManager;
-    }
 
     /**
      * Handles the {@link ApplicationStartedEvent} triggered when the application has started.

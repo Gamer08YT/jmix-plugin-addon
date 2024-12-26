@@ -35,12 +35,18 @@ subprojects {
     def subArchivesBaseName = props.getProperty('archivesBaseName')
     def archName = subArchivesBaseName.substring(1, subArchivesBaseName.length() - 1)
 
+    dependencies {
+        api('org.pf4j:pf4j:3.13.0')
+        api('org.pf4j:pf4j-spring:0.9.0')
+    }
+
     java {
         withSourcesJar()
     }
 
     artifacts {
-        archives sourcesJar
+        archives jar // Registriert die kompilierten Klassen richtig
+        archives sourcesJar // Ergänzend: Registriert die Source-JAR
     }
 
     publishing {
