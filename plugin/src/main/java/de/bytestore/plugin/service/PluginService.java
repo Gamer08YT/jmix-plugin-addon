@@ -389,8 +389,14 @@ public class PluginService {
         return activityContext.isPermitted();
     }
 
-    public void delete(Plugin pluginIO) {
-
+    /**
+     * Deletes the specified plugin using its unique identifier.
+     *
+     * @param pluginIO the plugin to be deleted, identified by its ID
+     * @return true if the plugin was successfully deleted, false otherwise
+     */
+    public boolean delete(Plugin pluginIO) {
+        return managerIO.deletePlugin(pluginIO.getId());
     }
 }
 

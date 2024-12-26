@@ -1,12 +1,14 @@
 package de.bytestore.plugin.view.plugin;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.core.LoadContext;
 import io.jmix.core.SaveContext;
 import io.jmix.flowui.Dialogs;
+import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.DialogAction;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
@@ -67,6 +69,8 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @ViewComponent
     private JmixButton removeButton;
+    @Autowired
+    private Notifications notifications;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
@@ -107,17 +111,23 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     }
 
     /**
-     * Handles the click event when the "Remove" button is clicked.
-     * This method displays a confirmation dialog asking the user whether they
-     * want to delete the currently edited plugin. If the user confirms,
-     * the plugin is deleted using the plugin service.
+     * Handles the click event of the remove button.
+     * This method displays a confirmation dialog to the user before attempting to delete
+     * the currently edited plugin. If the user confirms the deletion, the plugin is deleted
+     * using the PluginService and the result of the operation (success or failure) is
+     * displayed as a notification.
      *
-     * @param event the click event triggered by the "Remove" button.
+     * @param event the click event triggered by the remove button.
      */
     @Subscribe(id = "removeButton", subject = "clickListener")
     public void onRemoveButtonClick(final ClickEvent<JmixButton> event) {
         dialogs.createOptionDialog().withHeader(messageBundle.getMessage("delete")).withText(messageBundle.formatMessage("deleteWarning", getEditedEntity().getId())).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
-            pluginService.delete(getEditedEntity());
+
+            if (pluginService.delete(getEditedEntity()))
+                notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+            else
+                notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
+
         }), new DialogAction(DialogAction.Type.CANCEL)).open();
     }
 
