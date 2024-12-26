@@ -32,6 +32,7 @@
         <hbox id="detailActions">
             <button id="closeButton" action="closeAction"/>
             <button id="downloadButton" icon="lumo:download" text="msg://download"/>
+            <button id="removeButton" icon="vaadin:trash" themeNames="error" text="msg://remove"/>
         </hbox>
     </layout>
 </view>

@@ -15,7 +15,7 @@ public class SpringPluginManagerConfiguration {
 
     @Bean
     public SpringPluginManager pluginManager() {
-        return new SpringPluginManager(Path.of(getHome()));
+        return new SpringRuntimePluginManager(Path.of(getHome()));
     }
 
     /**

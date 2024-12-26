@@ -1,5 +1,6 @@
 package de.bytestore.plugin.service;
 
+import de.bytestore.plugin.configuration.SpringRuntimePluginManager;
 import de.bytestore.plugin.entity.Plugin;
 import io.jmix.core.AccessManager;
 import io.jmix.core.DataManager;
@@ -7,7 +8,7 @@ import io.jmix.core.accesscontext.SpecificOperationAccessContext;
 import io.jmix.flowui.download.Downloader;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
-import org.pf4j.spring.SpringPluginManager;
+import org.pf4j.RuntimeMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ public class PluginService {
     protected DataManager dataManager;
 
     @Autowired
-    private SpringPluginManager managerIO;
+    private SpringRuntimePluginManager managerIO;
 
     @Autowired
     private Environment environment;
@@ -73,6 +74,33 @@ public class PluginService {
     public void onApplicationStarted(final ApplicationStartedEvent event) {
         if (this.isAutoload())
             this.load();
+    }
+
+    /**
+     * Sets the runtime mode for the application.
+     *
+     * @param modeIO the runtime mode to be set, provided as a RuntimeMode object
+     */
+    public void setRuntimeMode(RuntimeMode modeIO) {
+        managerIO.setRuntimeMode(modeIO);
+
+        this.reload();
+    }
+
+    /**
+     * Reloads the application by stopping, unloading, and reinitializing plugins.
+     *
+     * This method performs the following sequence of operations:
+     * - Stops all currently loaded plugins via the managerIO.
+     * - Unloads all plugins from memory using the managerIO.
+     * - Reinitializes the plugin management system with the managerIO.
+     *
+     * It ensures that the current state of the plugins is reset and reinitialized properly.
+     */
+    public void reload() {
+        managerIO.stopPlugins();
+        managerIO.unloadPlugins();
+        managerIO.init();
     }
 
 
@@ -100,6 +128,9 @@ public class PluginService {
 
         // Load Plugins from Home.
         managerIO.loadPlugins();
+
+        // Start Plugins.
+        managerIO.startPlugins();
 
         log.info("Loaded {} Plugins.", managerIO.getPlugins().size());
     }
@@ -356,6 +387,10 @@ public class PluginService {
 
 
         return activityContext.isPermitted();
+    }
+
+    public void delete(Plugin pluginIO) {
+
     }
 }
 
