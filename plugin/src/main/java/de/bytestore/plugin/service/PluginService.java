@@ -351,6 +351,9 @@ public class PluginService {
      * @implNote https://github.com/pf4j/pf4j/blob/d763024aac175c2a5c3bedadc2986dd2111db65b/pf4j/src/main/java/org/pf4j/DependencyResolver.java#L142
      */
     public boolean isOutdated(Plugin pluginIO) {
+        if (pluginIO.getRequires() == null || pluginIO.getRequires().isEmpty() || pluginIO.getRequires().equals("*"))
+            return false;
+
         return !managerIO.getVersionManager().checkVersionConstraint(pluginIO.getRequires(), updateService.getVersion());
     }
 

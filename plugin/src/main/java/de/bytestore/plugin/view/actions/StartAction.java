@@ -48,7 +48,7 @@ public class StartAction<E> extends ItemTrackingAction<E> {
 
         event.getFirstSelectedItem().ifPresent(item -> {
             if (item instanceof de.bytestore.plugin.entity.Plugin) {
-                setEnabled(((de.bytestore.plugin.entity.Plugin) item).getState() != PluginState.STARTED);
+                setEnabled(((de.bytestore.plugin.entity.Plugin) item).getState() != PluginState.STARTED && ((de.bytestore.plugin.entity.Plugin) item).getState() != PluginState.DISABLED);
             }
         });
     }
