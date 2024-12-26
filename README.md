@@ -1,7 +1,7 @@
 # JMIX Plugin Addon
 
-The JMIX Plugin Addon allows you to write your own plugins for JMIX that are not anchored in the source code, but are
-injected via PF4J.
+The JMIX Plugin Addon allows you to write your own plugins for [JMIX](https://jmix.io/) that are not anchored in the source code, but are
+injected via [PF4J](https://pf4j.org/).
 
 The addon allows you to load/unload and deactivate plugins.
 
@@ -15,6 +15,10 @@ The addon allows you to load/unload and deactivate plugins.
 2. Add `xmlns:app="http://byte-store.de/schema/app-ui-components"` to your View Descriptor.
 
 ## Features
+
+- Plugin Management (Disable/Enable/Start/Stop/Delete/Download)
+- Version Management (Semver)
+- Plugin [Development Mode](https://pf4j.org/doc/development-mode.html) (Load Modules from Sourcecode and not JAR Archive)
 
 ### Plugin Auto-loading
 
