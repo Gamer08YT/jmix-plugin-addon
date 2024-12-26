@@ -9,6 +9,7 @@ import io.jmix.core.LoadContext;
 import io.jmix.core.SaveContext;
 import io.jmix.flowui.Dialogs;
 import io.jmix.flowui.Notifications;
+import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.action.DialogAction;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
@@ -71,6 +72,8 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     private JmixButton removeButton;
     @Autowired
     private Notifications notifications;
+    @Autowired
+    private ViewNavigators viewNavigators;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
@@ -123,9 +126,12 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     public void onRemoveButtonClick(final ClickEvent<JmixButton> event) {
         dialogs.createOptionDialog().withHeader(messageBundle.getMessage("delete")).withText(messageBundle.formatMessage("deleteWarning", getEditedEntity().getId())).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
 
-            if (pluginService.delete(getEditedEntity()))
+            if (pluginService.delete(getEditedEntity())) {
                 notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
-            else
+
+                // Navigate to Plugin Overview.
+                viewNavigators.listView(this, PluginListView.class).navigate();
+            } else
                 notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
         }), new DialogAction(DialogAction.Type.CANCEL)).open();

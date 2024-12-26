@@ -61,7 +61,7 @@ public class StartAction<E> extends ItemTrackingAction<E> {
 
             if (selectedIO != null) {
                 try {
-                    pluginService.stopPlugin(selectedIO.getId());
+                    pluginService.startPlugin(selectedIO.getId());
                     notifications.create(messageBundle.formatMessage("pluginStarted", selectedIO.getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
                 } catch (Exception e) {
                     notifications.create(messageBundle.formatMessage("pluginStartFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();

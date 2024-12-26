@@ -357,17 +357,26 @@ public class PluginService {
         return !managerIO.getVersionManager().checkVersionConstraint(pluginIO.getRequires(), updateService.getVersion());
     }
 
+    /**
+     * Downloads a plugin by reading its file from the specified path and uploading it to the client.
+     *
+     * @param pluginIO the plugin object containing the file path of the plugin to be downloaded
+     */
     public void downloadPlugin(Plugin pluginIO) {
         File fileIO = new File(pluginIO.getPath());
         String nameIO = fileIO.getName();
 
         try {
             if (fileIO.exists()) {
+                log.info("Uploading plugin to Frontend: {}", nameIO);
+
                 // Read File into Stream.
                 FileInputStream inputStream = new FileInputStream(fileIO);
 
                 // Upload File to Client.
                 downloader.download(() -> inputStream, nameIO);
+            } else {
+                log.error("File does not exist: {}", fileIO.getAbsolutePath());
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -399,6 +408,8 @@ public class PluginService {
      * @return true if the plugin was successfully deleted, false otherwise
      */
     public boolean delete(Plugin pluginIO) {
+        log.info("Deleting plugin: {}", pluginIO.getId());
+
         return managerIO.deletePlugin(pluginIO.getId());
     }
 }
