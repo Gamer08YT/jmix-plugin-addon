@@ -1,3 +1,4 @@
+[![Publish release](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/release.yml/badge.svg)](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/release.yml) [![CI pipeline](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/test.yml/badge.svg)](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/test.yml)
 # JMIX Plugin Addon
 
 The JMIX Plugin Addon allows you to write your own plugins for [JMIX](https://jmix.io/) that are not anchored in the
