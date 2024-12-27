@@ -412,5 +412,11 @@ public class PluginService {
 
         return managerIO.deletePlugin(pluginIO.getId());
     }
+
+    /**
+     * Retrieves the instance of*/
+    public SpringRuntimePluginManager getManager() {
+        return managerIO;
+    }
 }
 

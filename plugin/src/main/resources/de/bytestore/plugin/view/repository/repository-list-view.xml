@@ -13,11 +13,6 @@
                 </query>
             </loader>
         </collection>
-        <instance id="repositoryDc"
-                  class="de.bytestore.plugin.entity.Repository">
-            <fetchPlan extends="_base"/>
-            <loader id="repositoryDl"/>
-        </instance>
     </data>
     <facets>
         <dataLoadCoordinator auto="true"/>
@@ -30,53 +25,35 @@
         <action id="selectAction" type="lookup_select"/>
         <action id="discardAction" type="lookup_discard"/>
     </actions>
-    <layout padding="false">
-        <formLayout id="layoutWrapper" classNames="master-detail-layout" height="100%">
-            <vbox id="listLayout" height="100%">
-                <genericFilter id="genericFilter"
-                               dataLoader="repositoriesDl">
-                    <properties include=".*"/>
-                </genericFilter>
-                <hbox id="buttonsPanel" classNames="buttons-panel">
-                    <button id="createButton" action="repositoriesDataGrid.create"/>
-                    <button id="editButton" action="repositoriesDataGrid.edit"/>
-                    <button id="refreshButton" action="repositoriesDataGrid.refresh"/>
-                    <button id="removeButton" action="repositoriesDataGrid.remove"/>
-                    <simplePagination id="pagination" dataLoader="repositoriesDl"/>
-                </hbox>
-                <dataGrid id="repositoriesDataGrid"
-                          width="100%"
-                          minHeight="20em"
-                          dataContainer="repositoriesDc"
-                          columnReorderingAllowed="true">
-                    <actions>
-                        <action id="create" type="list_create"/>
-                        <action id="edit" type="list_edit"/>
-                        <action id="refresh" type="list_refresh"/>
-                        <action id="remove" type="list_remove"/>
-                    </actions>
-                    <columns resizable="true">
-                        <column property="uri"/>
-                    </columns>
-                </dataGrid>
-                <hbox id="lookupActions" visible="false">
-                    <button id="selectButton" action="selectAction"/>
-                    <button id="discardButton" action="discardAction"/>
-                </hbox>
-            </vbox>
-            <vbox id="detailsLayout" height="100%">
-                <formLayout id="form" dataContainer="repositoryDc">
-                    <responsiveSteps>
-                        <responsiveStep minWidth="0" columns="1"/>
-                        <responsiveStep minWidth="40em" columns="2"/>
-                    </responsiveSteps>
-                    <textField id="uriField" property="uri"/>
-                </formLayout>
-                <hbox id="detailActions">
-                    <button id="saveButton" text="msg:///actions.Save" icon="CHECK" themeNames="primary"/>
-                    <button id="cancelButton" text="msg:///actions.Cancel" icon="BAN"/>
-                </hbox>
-            </vbox>
-        </formLayout>
+    <layout>
+        <genericFilter id="genericFilter"
+                       dataLoader="repositoriesDl">
+            <properties include=".*"/>
+        </genericFilter>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="createButton" action="repositoriesDataGrid.create"/>
+            <button id="editButton" action="repositoriesDataGrid.edit"/>
+            <button id="removeButton" action="repositoriesDataGrid.remove"/>
+            <simplePagination id="pagination" dataLoader="repositoriesDl"/>
+        </hbox>
+        <dataGrid id="repositoriesDataGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="repositoriesDc"
+                  columnReorderingAllowed="true">
+            <actions>
+                <action id="create" type="list_create"/>
+                <action id="edit" type="list_edit"/>
+                <action id="remove" type="list_remove"/>
+            </actions>
+            <columns resizable="true">
+                <column property="uri"/>
+                <column property="enabled"/>
+            </columns>
+        </dataGrid>
+        <hbox id="lookupActions" visible="false">
+            <button id="selectButton" action="selectAction"/>
+            <button id="discardButton" action="discardAction"/>
+        </hbox>
     </layout>
 </view>

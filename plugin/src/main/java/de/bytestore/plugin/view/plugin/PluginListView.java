@@ -1,7 +1,8 @@
 package de.bytestore.plugin.view.plugin;
 
-import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.entity.Plugin;
@@ -10,12 +11,20 @@ import de.bytestore.plugin.service.PluginService;
 import de.bytestore.plugin.service.UpdateService;
 import io.jmix.core.LoadContext;
 import io.jmix.core.Messages;
+import io.jmix.flowui.Dialogs;
+import io.jmix.flowui.Notifications;
+import io.jmix.flowui.action.DialogAction;
+import io.jmix.flowui.backgroundtask.BackgroundTask;
+import io.jmix.flowui.backgroundtask.BackgroundWorker;
+import io.jmix.flowui.backgroundtask.TaskLifeCycle;
 import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
+import org.pf4j.update.PluginInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Route(value = "plugins", layout = DefaultMainViewParent.class)
 @ViewController(id = "plugin_Plugin.list")
@@ -33,21 +42,104 @@ public class PluginListView extends StandardListView<Plugin> {
     @Autowired
     private Messages messages;
 
+    @Autowired
+    private Notifications notifications;
+
     @ViewComponent
     private MessageBundle messageBundle;
+
     @Autowired
     private UpdateService updateService;
+
     @ViewComponent
     private JmixButton disableButton;
+
     @ViewComponent
     private JmixButton enableButton;
+
     @ViewComponent
     private JmixButton startButton;
+
     @ViewComponent
     private JmixButton stopButton;
 
+    @Autowired
+    private Dialogs dialogs;
+    @Autowired
+    private BackgroundWorker backgroundWorker;
+
+    /**
+     * Initializes the plugin list view by configuring the plugins data grid and adding component columns
+     * for displaying and interacting with plugin versions, states, and required version information.
+     *
+     * This method is triggered by the {@link InitEvent} of the view lifecycle and performs the following:
+     * - Adds a version column displaying the plugin's version status, including update availability.
+     * - Adds a state column showing the current state of each plugin with a corresponding badge color.
+     * - Adds a required version column if version check is enabled, showing version compatibility information.
+     *
+     * @param event the initialization event for the view, providing context for configuring the UI components
+     */
     @Subscribe
     public void onInit(final InitEvent event) {
+        // Add Version Badge.
+        Grid.Column<Plugin> versionIO = pluginsDataGrid.addComponentColumn(plugin -> {
+            String colorIO = "success";
+            Span spanIO = new Span();
+
+            // Add Badge Theme.
+            spanIO.getElement().getThemeList().add("badge");
+
+            if (updateService.isUpdateAvailable(plugin)) {
+                spanIO.setText(messages.getMessage("updateAvailable"));
+                colorIO = "warning";
+
+                PluginInfo.PluginRelease releaseIO = updateService.getLastRelease(plugin);
+
+                // Add Update Tooltip.
+                Tooltip.forComponent(spanIO).withText(messageBundle.formatMessage("updateAvailableTooltip", plugin.getId(), plugin.getVersion(), releaseIO.version));
+
+                // Update Plugin via Background Worker.
+                spanIO.addClickListener(clickEvent -> {
+                    dialogs.createOptionDialog().withHeader(messageBundle.getMessage("update")).withText(messageBundle.formatMessage("updateWarning", plugin.getId())).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
+                        backgroundWorker.handle(new BackgroundTask<Boolean, Boolean>(TimeUnit.MINUTES.toSeconds(1)) {
+                            @Override
+                            public Boolean run(TaskLifeCycle<Boolean> taskLifeCycle) throws Exception {
+                                return updateService.update(plugin);
+                            }
+
+                            /**
+                             * Called by the execution environment in UI thread when the task is completed.
+                             *
+                             * @param result result of execution returned by {@link #run(TaskLifeCycle)} method
+                             */
+                            @Override
+                            public void done(Boolean result) {
+                                if (result != null && result.booleanValue()) {
+                                    notifications.create(messageBundle.formatMessage("pluginUpdated", plugin.getId(), releaseIO.version)).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+
+                                    getUI().ifPresent(ui -> ui.access(() -> {
+                                        pluginsDataGrid.getDataProvider().refreshItem(plugin);
+                                    }));
+                                } else
+                                    notifications.create(messageBundle.formatMessage("pluginUpdateFailed", plugin.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
+
+                            }
+                        }).execute();
+
+                    }), new DialogAction(DialogAction.Type.CANCEL)).open();
+
+                });
+            }
+
+            // Add Badge Color.
+            spanIO.getElement().getThemeList().add(colorIO);
+
+            return spanIO;
+        }).setHeader(messageBundle.getMessage("version"));
+
+        pluginsDataGrid.setColumnPosition(versionIO, 1);
+
+        // Add State Badge.
         pluginsDataGrid.addComponentColumn(plugin -> {
             Span spanIO = new Span(messages.getMessage(plugin.getState()));
 
