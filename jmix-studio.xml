@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="IgnoredChangelogIncludeConfig">
+    <datastore-include-infos>
+      <datastore-include-info datastore-name="main" />
+    </datastore-include-infos>
+  </component>
   <component name="JmixDataStoreSettingsManager">
     <moduleSettings>
       <entry key="jmix-plugin-addon-addon.jmix-plugin-addon.main">
@@ -21,7 +26,30 @@
             <map>
               <entry key="main">
                 <value>
-                  <DataStoreSettingsV2 />
+                  <DataStoreSettingsV2>
+                    <option name="generateDdlType" value="CREATE_AND_UPDATE" />
+                    <option name="supportedTypes">
+                      <option value="hsql" />
+                    </option>
+                  </DataStoreSettingsV2>
+                </value>
+              </entry>
+            </map>
+          </option>
+          <option name="dataStores">
+            <map>
+              <entry key="main">
+                <value>
+                  <DataStore>
+                    <SavedDbProperties>
+                      <option name="databaseName" value="plugin" />
+                      <option name="dbType" value="hsqlfile" />
+                      <option name="dbmsVersion" />
+                      <option name="host" value=".jmix/hsqldb" />
+                      <option name="url" value="jdbc:hsqldb:file:.jmix/hsqldb/plugin" />
+                      <option name="user" value="sa" />
+                    </SavedDbProperties>
+                  </DataStore>
                 </value>
               </entry>
             </map>

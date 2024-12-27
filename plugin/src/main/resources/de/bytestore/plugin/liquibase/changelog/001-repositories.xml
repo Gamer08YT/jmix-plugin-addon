@@ -7,8 +7,9 @@
 
     <changeSet id="1" author="Jan Heil">
         <createTable tableName="PLUGIN_REPOSITORY">
-            <column name="ID" type="binary(16)">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PLUGIN_REPOSITORY"/>
+            <column name="ID" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_PLUGIN_REPOSITORY"
+                             validateNullable="true"/>
             </column>
             <column name="URI" type="VARCHAR(255)">
                 <constraints nullable="false"/>

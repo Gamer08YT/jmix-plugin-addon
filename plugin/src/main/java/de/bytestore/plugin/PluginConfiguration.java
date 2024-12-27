@@ -19,7 +19,7 @@ import java.util.Collections;
 @Configuration
 @ComponentScan
 @ConfigurationPropertiesScan
-@JmixModule(dependsOn = {EclipselinkConfiguration.class, DataConfiguration.class, FlowuiConfiguration.class})
+@JmixModule(dependsOn = {EclipselinkConfiguration.class, FlowuiConfiguration.class})
 @PropertySource(name = "de.bytestore.plugin", value = "classpath:/de/bytestore/plugin/module.properties")
 public class PluginConfiguration {
 
