@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -204,7 +205,7 @@ public class UpdateService {
      *         the update manager and the enabled repositories from the data manager.
      */
     public List<UpdateRepository> getRepositories() {
-        List<UpdateRepository> repositoriesIO = updateManager.getRepositories();
+        List<UpdateRepository> repositoriesIO = new ArrayList<>();
 
         unconstrainedDataManager.load(Repository.class).all().list().forEach(repositoryIO -> {
             try {

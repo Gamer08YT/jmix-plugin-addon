@@ -26,7 +26,7 @@ The addon allows you to load/unload and deactivate plugins.
 
 ### Create Plugin Repository
 
-A Plugin Repository is simply a JSON Array with the Definition of the Plugin Versions, for example, `repositories.json`:
+A Plugin Repository is simply a JSON Array with the Definition of the Plugin Versions, for example, `plugins.json`:
 
 ```json
 [
