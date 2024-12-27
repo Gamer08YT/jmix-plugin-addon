@@ -11,7 +11,9 @@ import org.pf4j.update.UpdateRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,9 @@ import java.util.List;
 @Service
 public class UpdateService {
     private static final Logger log = LoggerFactory.getLogger(UpdateService.class);
-    private final UnconstrainedDataManager unconstrainedDataManager;
+
+    @Autowired
+    private UnconstrainedDataManager unconstrainedDataManager;
 
     @Autowired(required = false)
     private BuildProperties buildProperties;
@@ -38,8 +42,10 @@ public class UpdateService {
     @Autowired
     private Environment environment;
 
-    public UpdateService(UnconstrainedDataManager unconstrainedDataManager) {
-        this.unconstrainedDataManager = unconstrainedDataManager;
+
+    @EventListener
+    public void onApplicationStarted(final ApplicationStartedEvent event) {
+        this.reloadRepositories();
     }
 
     /**
@@ -220,5 +226,7 @@ public class UpdateService {
      */
     public void reloadRepositories() {
         updateManager.setRepositories(getRepositories());
+
+        log.info("Reloaded {} repositories.", updateManager.getRepositories().size());
     }
 }
