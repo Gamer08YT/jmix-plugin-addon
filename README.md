@@ -36,14 +36,14 @@ A Plugin Repository is simply a JSON Array with the Definition of the Plugin Ver
     "description": "Welcome plugin",
     "releases": [
       {
-        "version": "0.8.0",
-        "date": "Jun 5, 2014 9:00:35 PM",
-        "url": "pf4j-demo-plugin1/0.8.0/pf4j-demo-plugin1-0.8.0.zip"
+        "version": "1.8.1",
+        "date": "2024-06-05T21:00:35",
+        "url": "../../../../welcome-plugin/build/libs/welcome-plugin-1.8.1.jar"
       },
       {
-        "version": "0.9.0",
-        "date": "Jun 25, 2014 9:58:35 PM",
-        "url": "pf4j-demo-plugin1/0.9.0/pf4j-demo-plugin1-0.9.0.zip"
+        "version": "1.8.0",
+        "date": "2024-06-01T20:10:21",
+        "url": "../../../../welcome-plugin/build/libs/welcome-plugin-1.8.0.jar"
       }
     ]
   }
