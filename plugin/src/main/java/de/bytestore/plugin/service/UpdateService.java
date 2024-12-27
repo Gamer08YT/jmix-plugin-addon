@@ -133,7 +133,7 @@ public class UpdateService {
      * @return true if an update is available for the plugin, false otherwise
      */
     public boolean isUpdateAvailable(Plugin pluginIO) {
-        return (this.getUpdateInfo(pluginIO) != null);
+        return updateManager.hasPluginUpdate(pluginIO.getId());
     }
 
     /**

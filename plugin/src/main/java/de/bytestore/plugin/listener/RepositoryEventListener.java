@@ -27,4 +27,6 @@ public class RepositoryEventListener {
     public void onRepositorySaving(final EntitySavingEvent<Repository> event) {
         updateService.reloadRepositories();
     }
+
+
 }

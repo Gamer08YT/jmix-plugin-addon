@@ -99,6 +99,8 @@ plugins.version.exact=true
 
 ![Detail View](assets/img/detail-view.png)
 
+![Detail View -> Update Available](assets/img/update.png)
+
 Shield: [![CC BY-NC 4.0][cc-by-nc-shield]][cc-by-nc]
 
 This work is licensed under a
