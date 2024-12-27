@@ -1,5 +1,6 @@
 package de.bytestore.plugin.view.plugin;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
@@ -257,5 +258,34 @@ public class PluginListView extends StandardListView<Plugin> {
         // Here you can load entities from an external storage.
         // Set the loaded entities to the not-new state using EntityStates.setNew(entity, false).
         return pluginService.castPlugins();
+    }
+
+    @Subscribe(id = "reloadButton", subject = "clickListener")
+    public void onReloadButtonClick(final ClickEvent<JmixButton> event) {
+        dialogs.createOptionDialog().withHeader(messageBundle.getMessage("reload")).withText(messageBundle.getMessage("reloadWarning")).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
+            backgroundWorker.handle(new BackgroundTask<Integer, Void>(TimeUnit.MINUTES.toSeconds(1)) {
+                @Override
+                public Void run(TaskLifeCycle<Integer> taskLifeCycle) throws Exception {
+                    pluginService.reload();
+
+                    return null;
+                }
+
+                /**
+                 * Called by the execution environment in UI thread when the task is completed.
+                 *
+                 * @param result result of execution returned by {@link #run(TaskLifeCycle)} method
+                 */
+                @Override
+                public void done(Void result) {
+                    notifications.create(messageBundle.getMessage("pluginsReloaded")).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+
+                    getUI().ifPresent(ui -> ui.access(() -> {
+                        pluginsDataGrid.getDataProvider().refreshAll();
+                    }));
+                }
+            }).execute();
+
+        }), new DialogAction(DialogAction.Type.CANCEL)).open();
     }
 }
