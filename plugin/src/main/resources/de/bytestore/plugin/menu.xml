@@ -5,4 +5,5 @@
     <item view="plugin_Plugin.list" description="msg://de.bytestore.plugin/menu_config.plugin_Plugin.list.description"
           icon="vaadin:puzzle-piece"
           title="msg://de.bytestore.plugin/menu_config.plugin_Plugin.list.title"/>
+    <item view="plugin_Repository.list" icon="vaadin:list" title="msg://de.bytestore.plugin.view.repository/repositoryListView.title"/>
 </menu-config>
