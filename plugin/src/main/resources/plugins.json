@@ -1,0 +1,13 @@
+[
+  {
+    "id": "welcome-plugin",
+    "description": "Welcome plugin",
+    "releases": [
+      {
+        "version": "1.8.1",
+        "date": "2024-06-05T21:00:35",
+        "url": "../../../../welcome-plugin/build/libs/welcome-plugin-1.8.1.jar"
+      }
+    ]
+  }
+]

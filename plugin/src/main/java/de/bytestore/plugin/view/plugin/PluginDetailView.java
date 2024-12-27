@@ -11,11 +11,15 @@ import io.jmix.flowui.Dialogs;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.action.DialogAction;
+import io.jmix.flowui.backgroundtask.BackgroundTask;
+import io.jmix.flowui.backgroundtask.BackgroundWorker;
+import io.jmix.flowui.backgroundtask.TaskLifeCycle;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * PluginDetailView is responsible for providing the detailed view of a Plugin entity.
@@ -74,6 +78,8 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     private Notifications notifications;
     @Autowired
     private ViewNavigators viewNavigators;
+    @Autowired
+    private BackgroundWorker backgroundWorker;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
@@ -126,14 +132,30 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     public void onRemoveButtonClick(final ClickEvent<JmixButton> event) {
         dialogs.createOptionDialog().withHeader(messageBundle.getMessage("delete")).withText(messageBundle.formatMessage("deleteWarning", getEditedEntity().getId())).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
 
-            if (pluginService.delete(getEditedEntity())) {
-                notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+            // Handle Deletion Process via Background Task.
+            backgroundWorker.handle(new BackgroundTask<Boolean, Boolean>(TimeUnit.MINUTES.toSeconds(1)) {
+                @Override
+                public Boolean run(TaskLifeCycle<Boolean> taskLifeCycle) throws Exception {
+                    return pluginService.delete(getEditedEntity());
+                }
 
-                // Navigate to Plugin Overview.
-                viewNavigators.view(this, PluginListView.class).navigate();
-            } else
-                notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
+                /**
+                 * Called by the execution environment in UI thread when the task is completed.
+                 *
+                 * @param result result of execution returned by {@link #run(TaskLifeCycle)} method
+                 */
+                @Override
+                public void done(Boolean result) {
+                    if (result) {
+                        notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
 
+                        // Navigate to Plugin Overview.
+                        viewNavigators.view(this.getOwnerView(), PluginListView.class).navigate();
+                    } else
+                        notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
+
+                }
+            });
         }), new DialogAction(DialogAction.Type.CANCEL)).open();
     }
 
