@@ -18,7 +18,7 @@ The addon allows you to load/unload and deactivate plugins.
 
 ## Features
 
-- Plugin Management (Disable/Enable/Start/Stop/Delete/Download)
+- Plugin Management (Disable/Enable/Start/Stop/Delete/Download/Update)
 - Version Management ([Semver](https://semver.org/))
 - Plugin [Development Mode](https://pf4j.org/doc/development-mode.html) (Load Modules from Sourcecode and not JAR
   Archive)
