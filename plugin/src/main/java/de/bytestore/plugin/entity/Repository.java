@@ -23,15 +23,29 @@ public class Repository {
     @Column(name = "ID", nullable = false)
     @Id
     private UUID id;
+
     @Column(name = "URI", nullable = false)
     @NotNull
     private String uri;
+
+    @Column(name = "ENABLED")
+    private Boolean enabled = true;
+
     @CreatedBy
     @Column(name = "CREATED_BY")
     private String createdBy;
+
     @CreatedDate
     @Column(name = "CREATED_DATE")
     private OffsetDateTime createdDate;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public String getUri() {
         return uri;
