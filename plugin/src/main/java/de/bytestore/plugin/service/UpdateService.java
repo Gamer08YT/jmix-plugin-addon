@@ -1,9 +1,13 @@
 package de.bytestore.plugin.service;
 
+import de.bytestore.plugin.configuration.JMIXUpdateManager;
 import de.bytestore.plugin.configuration.SpringRuntimePluginManager;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.entity.Repository;
+import io.jmix.core.UnconstrainedDataManager;
+import org.pf4j.update.DefaultUpdateRepository;
 import org.pf4j.update.PluginInfo;
-import org.pf4j.update.UpdateManager;
+import org.pf4j.update.UpdateRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,24 +16,31 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 @Component
 @Service
 public class UpdateService {
     private static final Logger log = LoggerFactory.getLogger(UpdateService.class);
+    private final UnconstrainedDataManager unconstrainedDataManager;
 
     @Autowired(required = false)
     private BuildProperties buildProperties;
 
     @Autowired
-    private UpdateManager updateManager;
+    private JMIXUpdateManager updateManager;
 
     @Autowired
     private SpringRuntimePluginManager pluginManager;
 
     @Autowired
     private Environment environment;
+
+    public UpdateService(UnconstrainedDataManager unconstrainedDataManager) {
+        this.unconstrainedDataManager = unconstrainedDataManager;
+    }
 
     /**
      * Retrieves the version of the application as specified in the build properties.
@@ -176,5 +187,38 @@ public class UpdateService {
      */
     public PluginInfo.PluginRelease getLastRelease(Plugin plugin) {
         return updateManager.getLastPluginRelease(plugin.getId());
+    }
+
+    /**
+     * Retrieves a list of repositories from the update manager, supplemented by additional repositories
+     * loaded from the unconstrained data manager. Each additional repository is included in the list
+     * if it is marked as enabled. If the repository URI is invalid, a runtime exception is thrown.
+     *
+     * @return a list of {@link UpdateRepository} objects, representing the combined repositories from
+     *         the update manager and the enabled repositories from the data manager.
+     */
+    public List<UpdateRepository> getRepositories() {
+        List<UpdateRepository> repositoriesIO = updateManager.getRepositories();
+
+        unconstrainedDataManager.load(Repository.class).all().list().forEach(repositoryIO -> {
+            try {
+                // Add Repository to List if enabled.
+                if (repositoryIO.getEnabled())
+                    repositoriesIO.add(new DefaultUpdateRepository(repositoryIO.getId().toString(), new URL(repositoryIO.getUri())));
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return repositoriesIO;
+    }
+
+    /**
+     * Reloads the repositories by fetching the latest repository data and updating
+     * the repository manager. The method retrieves the updated list of repositories
+     * and sets them in the update manager.
+     */
+    public void reloadRepositories() {
+        updateManager.setRepositories(getRepositories());
     }
 }
