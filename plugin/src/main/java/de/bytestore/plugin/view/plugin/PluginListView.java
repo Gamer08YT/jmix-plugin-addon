@@ -66,6 +66,7 @@ public class PluginListView extends StandardListView<Plugin> {
 
     @Autowired
     private Dialogs dialogs;
+
     @Autowired
     private BackgroundWorker backgroundWorker;
 
@@ -90,7 +91,7 @@ public class PluginListView extends StandardListView<Plugin> {
             // Add Badge Theme.
             spanIO.getElement().getThemeList().add("badge");
 
-            if (updateService.isUpdateAvailable(plugin)) {
+            if (updateService.isUpdateAvailable(plugin) && pluginService.isPermitted("update")) {
                 spanIO.setText(messages.getMessage("updateAvailable"));
                 colorIO = "warning";
 
@@ -130,6 +131,11 @@ public class PluginListView extends StandardListView<Plugin> {
                     }), new DialogAction(DialogAction.Type.CANCEL)).open();
 
                 });
+            } else {
+                spanIO.setText(plugin.getVersion());
+
+                // Add Up-To-Date Tooltip.
+                Tooltip.forComponent(spanIO).withText(messageBundle.getMessage("upToDate"));
             }
 
             // Add Badge Color.

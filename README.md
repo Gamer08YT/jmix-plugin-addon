@@ -21,6 +21,41 @@ The addon allows you to load/unload and deactivate plugins.
 - Version Management ([Semver](https://semver.org/))
 - Plugin [Development Mode](https://pf4j.org/doc/development-mode.html) (Load Modules from Sourcecode and not JAR
   Archive)
+- Local Plugin Repositories
+- Remote Plugin Repositories
+
+### Create Plugin Repository
+
+A Plugin Repository is simply a JSON Array with the Definition of the Plugin Versions, for example, `repositories.json`:
+
+```json
+[
+  {
+    "id": "welcome-plugin",
+    "description": "Welcome plugin",
+    "releases": [
+      {
+        "version": "0.8.0",
+        "date": "Jun 5, 2014 9:00:35 PM",
+        "url": "pf4j-demo-plugin1/0.8.0/pf4j-demo-plugin1-0.8.0.zip"
+      },
+      {
+        "version": "0.9.0",
+        "date": "Jun 25, 2014 9:58:35 PM",
+        "url": "pf4j-demo-plugin1/0.9.0/pf4j-demo-plugin1-0.9.0.zip"
+      }
+    ]
+  }
+]
+```
+
+### Local Repository URI:
+
+```file:/home/jaxnprivate/work/jmix-plugin-addon/resources/```
+
+### Remote Repository URI:
+
+```http://plugins.byte-system.de/```
 
 ### Plugin Auto-loading
 
