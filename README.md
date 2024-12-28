@@ -1,20 +1,37 @@
 [![Publish release](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/release.yml/badge.svg)](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/release.yml) [![CI pipeline](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/test.yml/badge.svg)](https://github.com/Gamer08YT/jmix-plugin-addon/actions/workflows/test.yml)
-# JMIX Plugin Addon
 
-The JMIX Plugin Addon allows you to write your own plugins for [JMIX](https://jmix.io/) that are not anchored in the
+# Jmix Plugin Addon
+
+The Jmix Plugin Addon allows you to write your own plugins for [Jmix](https://jmix.io/) that are not anchored in the
 source code, but are
 injected via [PF4J](https://pf4j.org/).
 
-The addon allows you to load/unload and deactivate plugins.
+The addon allows you to load/unload and enable/disable or update plugins via your own plugin repository.
 
-## Installation
+![Detail View -> Update Available](assets/img/update.png)
 
-1. Add Maven Dependencies to your `build.gradle`.
+## Manual Installation
+
+The following table lists the add-on versions compatible with different Jmix platform versions:
+
+| Jmix Version | Add-on Version | Dependency (Gradle Implementation) |
+|--------------|----------------|------------------------------------|
+| 2.4.2        | 1.3.1          | de.bytestore:plugin-starter:1.3.1  |
+
+1. Add Maven Dependencies to your `build.gradle`:
     ```groovy
-    implementation 'de.bytestore:plugin'
-    implementation 'de.bytestore:plugin-starter' 
+    implementation 'de.bytestore:plugin-starter:<addon-version>' 
     ```
-2. Add `xmlns:app="http://byte-store.de/schema/app-ui-components"` to your View Descriptor.
+2. Make sure to replace `<addon-version>` with the compatible version mentioned in the table above.
+
+## Provided Views
+
+The Add-on comes with 4 included Views.
+
+- PluginListView [/plugins]
+- PluginDetailView [/plugins/{id}]
+- RepositoryListView [/repositories]
+- RepositoryDetailView [/repositories/{id}]
 
 ## Features
 
@@ -52,9 +69,13 @@ A Plugin Repository is simply a JSON Array with the Definition of the Plugin Ver
 
 ### Local Repository URI:
 
+A local Repository could be a JSON File on your machine.
+
 ```file:/home/jaxnprivate/work/jmix-plugin-addon/resources/```
 
 ### Remote Repository URI:
+
+A remote Repository could be a JSON File or a Route with an JSON Object on a Webserver.
 
 ```http://plugins.byte-system.de/```
 
