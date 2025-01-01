@@ -401,6 +401,29 @@ public class PluginService {
         return activityContext.isPermitted();
     }
 
+
+    /**
+     * Retrieves a list of extensions associated with the given class type.
+     *
+     * @param classIO the class type for which extensions are to be retrieved
+     * @return a list of extensions corresponding to the specified class type
+     */
+    public List getExtension(Class classIO) {
+        return managerIO.getExtensions(classIO);
+    }
+
+    /**
+     * Retrieves a list of extensions associated with the specified class and plugin identifier.
+     *
+     * @param classIO  the class for which the extensions are being retrieved
+     * @param pluginId the identifier of the plugin associated with the extensions
+     * @return a list of extensions corresponding to the given class and plugin identifier
+     */
+    public List getExtension(Class classIO, String pluginId) {
+        return managerIO.getExtensions(classIO, pluginId);
+    }
+
+
     /**
      * Deletes the specified plugin using its unique identifier.
      *
