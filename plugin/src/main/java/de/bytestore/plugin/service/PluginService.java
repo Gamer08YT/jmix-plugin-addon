@@ -98,6 +98,7 @@ public class PluginService {
      * It ensures that the current state of the plugins is reset and reinitialized properly.
      */
     public void reload() {
+        updateService.refresh();
         managerIO.stopPlugins();
         managerIO.unloadPlugins();
         managerIO.init();

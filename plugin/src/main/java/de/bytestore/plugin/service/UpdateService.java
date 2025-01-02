@@ -230,4 +230,13 @@ public class UpdateService {
 
         log.info("Reloaded {} repositories.", updateManager.getRepositories().size());
     }
+
+    /**
+     * Refreshes the current state by delegating the refresh operation
+     * to the underlying update manager. This method ensures that the
+     * latest data or state is retrieved and updated accordingly.
+     */
+    public void refresh() {
+        updateManager.refresh();
+    }
 }
