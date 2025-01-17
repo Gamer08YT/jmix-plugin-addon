@@ -1,6 +1,7 @@
 package de.bytestore.plugin.view.pluginupload;
 
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -11,6 +12,7 @@ import io.jmix.flowui.Dialogs;
 import io.jmix.flowui.UiComponents;
 import io.jmix.flowui.component.codeeditor.CodeEditor;
 import io.jmix.flowui.component.upload.FileUploadField;
+import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.kit.component.upload.event.FileUploadSucceededEvent;
 import io.jmix.flowui.view.*;
 import org.slf4j.Logger;
@@ -32,6 +34,8 @@ public class PluginUploadView extends StandardView {
     private MessageBundle messageBundle;
     @Autowired
     private Messages messages;
+    @ViewComponent
+    private JmixButton pluginSubmit;
 
     @Subscribe("pluginArchive")
     public void onPluginArchiveFileUploadSucceeded(final FileUploadSucceededEvent<FileUploadField> event) {
@@ -53,6 +57,8 @@ public class PluginUploadView extends StandardView {
             pluginService.moveOutOfTemp(fileName);
 
             log.info("Successfully Uploaded Plugin Archive: {}", fileName);
+
+            pluginSubmit.setEnabled(true);
         } catch (Exception e) {
             log.error("Unable to Upload Plugin Archive: {}. {}", fileName, e.getMessage());
 
@@ -72,8 +78,16 @@ public class PluginUploadView extends StandardView {
 
             dialogIO.withContent(layoutIO);
             dialogIO.open();
+
+            pluginSubmit.setEnabled(false);
         }
 
     }
+
+    @Subscribe(id = "pluginSubmit", subject = "clickListener")
+    public void onPluginSubmitClick(final ClickEvent<JmixButton> event) {
+        this.close(StandardOutcome.SAVE);
+    }
+
 
 }
