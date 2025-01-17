@@ -3,6 +3,7 @@ package de.bytestore.plugin.view.pluginupload;
 
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.core.Messages;
@@ -60,7 +61,7 @@ public class PluginUploadView extends StandardView {
 
             Dialogs.MessageDialogBuilder dialogIO = dialogs.createMessageDialog().withHeader(messages.getMessage("de.bytestore.plugin.view.plugin/upload"));
 
-            HorizontalLayout layoutIO = uiComponents.create(HorizontalLayout.class);
+            VerticalLayout layoutIO = uiComponents.create(VerticalLayout.class);
 
             CodeEditor editorIO = uiComponents.create(CodeEditor.class);
             editorIO.setValue(e.getMessage());
