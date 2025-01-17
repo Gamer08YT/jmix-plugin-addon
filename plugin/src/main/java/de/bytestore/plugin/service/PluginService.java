@@ -19,9 +19,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -62,6 +63,58 @@ public class PluginService {
 
     @Autowired
     private Downloader downloader;
+
+    /**
+     * Writes the given content into a temporary file with the specified name.
+     * If the file does not already exist, a new file is created.
+     * Logs a debug message after successfully writing the file.
+     *
+     * @param nameIO the name of the file to be created or written to
+     * @param contentIO the byte array content to be written into the file
+     */
+    public void writeTemp(String nameIO, byte[] contentIO) {
+        try {
+            checkTemp();
+
+            File file = new File(getTemp() + nameIO);
+            file.createNewFile();
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(contentIO);
+            fos.close();
+
+            log.debug("Wrote Temp Archive for {}.", nameIO);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Checks if the temporary directory exists. If it does not exist,
+     * it attempts to create the directory.
+     *
+     * @return true if the temporary directory exists or was successfully created, false otherwise
+     */
+    private boolean checkTemp() {
+        File fileIO = new File(getTemp());
+
+        if (!fileIO.exists()) {
+            fileIO.mkdirs();
+
+            log.info("Created temp directory: {}", fileIO.getAbsolutePath());
+        }
+
+        return fileIO.exists();
+    }
+
+    /**
+     * Retrieves the temporary directory path by appending "tmp/" to the home directory path.
+     *
+     * @return the full path of the temporary directory as a String
+     */
+    public String getTemp() {
+        return this.getHome() + "tmp/";
+    }
 
     /**
      * Handles the {@link ApplicationStartedEvent} triggered when the application has started.
@@ -441,6 +494,41 @@ public class PluginService {
      * Retrieves the instance of*/
     public SpringRuntimePluginManager getManager() {
         return managerIO;
+    }
+
+    /**
+     * Checks the validity of a plugin by attempting to load it from the specified file.
+     *
+     * @param fileName the name of the file containing the plugin to be checked
+     */
+    public void checkPlugin(String fileName) {
+        // Test Load Plugin.
+        String idIO = managerIO.loadPlugin(Paths.get(getTemp() + fileName));
+
+        log.debug("Test Loaded Plugin: {}", idIO);
+
+        // Unload Plugin again.
+        managerIO.unloadPlugin(idIO);
+
+        log.debug("Unloaded Plugin: {}", idIO);
+    }
+
+    /**
+     * Moves a file out of the temporary directory to the home directory.
+     * The file is specified by its name and will be replaced in the
+     * destination if it already exists.
+     *
+     * @param fileName the name of the file to be moved from the temporary
+     *                 directory to the home directory
+     */
+    public void moveOutOfTemp(String fileName) {
+        File oldIO = new File(getTemp() + fileName);
+
+        try {
+            Files.move(oldIO.toPath(), new File(getHome() + fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

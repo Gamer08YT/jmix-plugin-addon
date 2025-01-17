@@ -10,10 +10,13 @@ import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.entity.PluginState;
 import de.bytestore.plugin.service.PluginService;
 import de.bytestore.plugin.service.UpdateService;
+import de.bytestore.plugin.view.pluginupload.PluginUploadView;
 import io.jmix.core.LoadContext;
 import io.jmix.core.Messages;
+import io.jmix.flowui.DialogWindows;
 import io.jmix.flowui.Dialogs;
 import io.jmix.flowui.Notifications;
+import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.action.DialogAction;
 import io.jmix.flowui.backgroundtask.BackgroundTask;
 import io.jmix.flowui.backgroundtask.BackgroundWorker;
@@ -69,6 +72,10 @@ public class PluginListView extends StandardListView<Plugin> {
 
     @Autowired
     private BackgroundWorker backgroundWorker;
+    @Autowired
+    private ViewNavigators viewNavigators;
+    @Autowired
+    private DialogWindows dialogWindows;
 
     /**
      * Initializes the plugin list view by configuring the plugins data grid and adding component columns
@@ -294,4 +301,21 @@ public class PluginListView extends StandardListView<Plugin> {
 
         }), new DialogAction(DialogAction.Type.CANCEL)).open();
     }
+
+    /**
+     * Handles the click event of the upload button in the plugin list view.
+     *
+     * When the upload button is clicked, this method opens the {@link PluginUploadView} dialog window.
+     * After the dialog is closed, it refreshes the plugins data grid to reflect any changes made during the upload process.
+     *
+     * @param event the click event associated with the upload button, containing details about the source button and click context
+     */
+    @Subscribe(id = "uploadButton", subject = "clickListener")
+    public void onUploadButtonClick(final ClickEvent<JmixButton> event) {
+        dialogWindows.view(this, PluginUploadView.class).withAfterCloseListener(pluginUploadViewAfterCloseEvent -> {
+            pluginsDataGrid.getDataProvider().refreshAll();
+        });
+    }
+
+
 }

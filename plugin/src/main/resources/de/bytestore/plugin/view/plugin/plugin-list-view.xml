@@ -26,6 +26,7 @@
             <button id="stopButton" action="pluginsDataGrid.stop"/>
             <button id="startButton" action="pluginsDataGrid.start"/>
             <button icon="lumo:reload" id="reloadButton" text="msg://reload"/>
+            <button id="uploadButton" icon="lumo:upload" text="msg://upload"/>
             <button id="refreshButton" action="pluginsDataGrid.refresh"/>
             <simplePagination id="pagination" dataLoader="pluginsDl"/>
         </hbox>

@@ -36,7 +36,9 @@ subprojects {
     def archName = subArchivesBaseName.substring(1, subArchivesBaseName.length() - 1)
 
     dependencies {
-        api('org.pf4j:pf4j:3.13.0')
+        api('org.pf4j:pf4j:3.13.0') {
+            exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        }
         api('org.pf4j:pf4j-spring:0.9.0')
     }
 

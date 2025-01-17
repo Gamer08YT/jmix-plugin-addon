@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://pluginUploadView.title">
+    <layout>
+        <fileUploadField label="msg://pluginFile" id="pluginArchive" acceptedFileTypes=".jar" fileNameVisible="true" required="true"
+                         dropAllowed="true" clearButtonVisible="true"/>
+        <button text="msg://install" enabled="false" id="pluginSubmit" icon="lumo:upload"/>
+    </layout>
+</view>
