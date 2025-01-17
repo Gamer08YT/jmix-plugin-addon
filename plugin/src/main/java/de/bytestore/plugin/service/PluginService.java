@@ -407,7 +407,7 @@ public class PluginService {
         if (pluginIO.getRequires() == null || pluginIO.getRequires().isEmpty() || pluginIO.getRequires().equals("*"))
             return false;
 
-        return managerIO.getVersionManager().checkVersionConstraint(updateService.getVersion(), pluginIO.getRequires());
+        return !managerIO.getVersionManager().checkVersionConstraint(updateService.getVersion(), pluginIO.getRequires());
     }
 
     /**

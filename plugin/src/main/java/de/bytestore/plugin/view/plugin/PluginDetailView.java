@@ -149,8 +149,9 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
                     if (result) {
                         notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
 
-                        // Navigate to Plugin Overview.
-                        viewNavigators.view(this.getOwnerView(), PluginListView.class).navigate();
+                        if (this.getOwnerView() != null)
+                            // Navigate to Plugin Overview.
+                            viewNavigators.view(this.getOwnerView(), PluginListView.class).navigate();
                     } else
                         notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
