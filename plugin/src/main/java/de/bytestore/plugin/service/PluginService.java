@@ -407,7 +407,7 @@ public class PluginService {
         if (pluginIO.getRequires() == null || pluginIO.getRequires().isEmpty() || pluginIO.getRequires().equals("*"))
             return false;
 
-        return !managerIO.getVersionManager().checkVersionConstraint(pluginIO.getRequires(), updateService.getVersion());
+        return managerIO.getVersionManager().checkVersionConstraint(updateService.getVersion(), pluginIO.getRequires());
     }
 
     /**
@@ -513,18 +513,23 @@ public class PluginService {
 
         // Throw Outdated.
         if (updateService.isVersionCheck() && isOutdated(castPlugin(managerIO.getPlugin(idIO)))) {
-            throw new PluginRuntimeException("Plugin '{}' requires a minimum system version of {}, and you have {}", wrapperIO.getPluginId() + "@" + descriptorIO.getVersion(), descriptorIO.getRequires(), descriptorIO.getVersion());
-        }
+            // Unload Plugin again.
+            managerIO.unloadPlugin(idIO);
 
-        // Unload Plugin again.
-        managerIO.unloadPlugin(idIO);
+            throw new PluginRuntimeException("Plugin '{}' requires a minimum system version of {}, and you have {}", wrapperIO.getPluginId() + "@" + descriptorIO.getVersion(), descriptorIO.getRequires(), updateService.getVersion());
+        }
 
         log.info("Test Unloaded Plugin: {}", stateIO);
 
         if (stateIO == PluginState.FAILED) {
+            // Unload Plugin again.
+            managerIO.unloadPlugin(idIO);
+
             throw new RuntimeException(exceptionIO);
         }
 
+        // Unload Plugin again.
+        managerIO.unloadPlugin(idIO);
     }
 
     /**

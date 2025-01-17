@@ -155,7 +155,7 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
                         notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
                 }
-            });
+            }).execute();
         }), new DialogAction(DialogAction.Type.CANCEL)).open();
     }
 
