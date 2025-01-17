@@ -6,9 +6,7 @@ import io.jmix.core.AccessManager;
 import io.jmix.core.DataManager;
 import io.jmix.core.accesscontext.SpecificOperationAccessContext;
 import io.jmix.flowui.download.Downloader;
-import org.pf4j.PluginState;
-import org.pf4j.PluginWrapper;
-import org.pf4j.RuntimeMode;
+import org.pf4j.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,20 +70,21 @@ public class PluginService {
      * @param nameIO the name of the file to be created or written to
      * @param contentIO the byte array content to be written into the file
      */
-    public void writeTemp(String nameIO, byte[] contentIO) {
+    public void writeTemp(String nameIO, byte[] contentIO) throws RuntimeException {
         try {
             checkTemp();
 
             File file = new File(getTemp() + nameIO);
             file.createNewFile();
+
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(contentIO);
             fos.close();
 
-            log.debug("Wrote Temp Archive for {}.", nameIO);
+            log.info("Wrote Temp Archive for {}.", nameIO);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -113,7 +112,7 @@ public class PluginService {
      * @return the full path of the temporary directory as a String
      */
     public String getTemp() {
-        return this.getHome() + "tmp/";
+        return environment.getProperty("plugins.tmp", "./tmp/");
     }
 
     /**
@@ -501,16 +500,31 @@ public class PluginService {
      *
      * @param fileName the name of the file containing the plugin to be checked
      */
-    public void checkPlugin(String fileName) {
+    public void checkPlugin(String fileName) throws RuntimeException {
         // Test Load Plugin.
         String idIO = managerIO.loadPlugin(Paths.get(getTemp() + fileName));
 
-        log.debug("Test Loaded Plugin: {}", idIO);
+        log.info("Test Loaded Plugin: {}", idIO);
+
+        PluginWrapper wrapperIO = managerIO.getPlugin(idIO);
+        Throwable exceptionIO = wrapperIO.getFailedException();
+        PluginState stateIO = wrapperIO.getPluginState();
+        PluginDescriptor descriptorIO = wrapperIO.getDescriptor();
+
+        // Throw Outdated.
+        if (updateService.isVersionCheck() && isOutdated(castPlugin(managerIO.getPlugin(idIO)))) {
+            throw new PluginRuntimeException("Plugin '{}' requires a minimum system version of {}, and you have {}", wrapperIO.getPluginId() + "@" + descriptorIO.getVersion(), descriptorIO.getRequires(), descriptorIO.getVersion());
+        }
 
         // Unload Plugin again.
         managerIO.unloadPlugin(idIO);
 
-        log.debug("Unloaded Plugin: {}", idIO);
+        log.info("Test Unloaded Plugin: {}", stateIO);
+
+        if (stateIO == PluginState.FAILED) {
+            throw new RuntimeException(exceptionIO);
+        }
+
     }
 
     /**
@@ -521,7 +535,7 @@ public class PluginService {
      * @param fileName the name of the file to be moved from the temporary
      *                 directory to the home directory
      */
-    public void moveOutOfTemp(String fileName) {
+    public void moveOutOfTemp(String fileName) throws RuntimeException {
         File oldIO = new File(getTemp() + fileName);
 
         try {
@@ -529,6 +543,16 @@ public class PluginService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Removes a temporary file with the specified name from the temporary directory.
+     *
+     * @param fileName the name of the temporary file to be deleted
+     * @return true if the file was successfully deleted, false otherwise
+     */
+    public boolean removeTemp(String fileName) {
+        return new File(getTemp() + fileName).delete();
     }
 }
 

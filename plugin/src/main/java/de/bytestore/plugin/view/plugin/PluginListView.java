@@ -314,7 +314,7 @@ public class PluginListView extends StandardListView<Plugin> {
     public void onUploadButtonClick(final ClickEvent<JmixButton> event) {
         dialogWindows.view(this, PluginUploadView.class).withAfterCloseListener(pluginUploadViewAfterCloseEvent -> {
             pluginsDataGrid.getDataProvider().refreshAll();
-        });
+        }).open();
     }
 
 

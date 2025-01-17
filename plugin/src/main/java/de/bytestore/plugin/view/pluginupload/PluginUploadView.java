@@ -1,10 +1,14 @@
 package de.bytestore.plugin.view.pluginupload;
 
 
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.service.PluginService;
 import io.jmix.core.Messages;
 import io.jmix.flowui.Dialogs;
+import io.jmix.flowui.UiComponents;
+import io.jmix.flowui.component.codeeditor.CodeEditor;
 import io.jmix.flowui.component.upload.FileUploadField;
 import io.jmix.flowui.kit.component.upload.event.FileUploadSucceededEvent;
 import io.jmix.flowui.view.*;
@@ -17,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 @ViewDescriptor(path = "plugin-upload-view.xml")
 public class PluginUploadView extends StandardView {
     private static final Logger log = LoggerFactory.getLogger(PluginUploadView.class);
+    @Autowired
+    protected UiComponents uiComponents;
     @Autowired
     private PluginService pluginService;
     @Autowired
@@ -47,11 +53,25 @@ public class PluginUploadView extends StandardView {
 
             log.info("Successfully Uploaded Plugin Archive: {}", fileName);
         } catch (Exception e) {
-            log.error("Unable to Upload Plugin Archive: {}. {}", fileName, e);
+            log.error("Unable to Upload Plugin Archive: {}. {}", fileName, e.getMessage());
 
-            dialogs.createMessageDialog().withHeader(messages.getMessage("de.bytestore.plugin.view.plugin/upload")).withText(messageBundle.formatMessage("uploadFailed", fileName, e.getMessage())).open();
+            // Remove from Temp directory.
+            pluginService.removeTemp(fileName);
+
+            Dialogs.MessageDialogBuilder dialogIO = dialogs.createMessageDialog().withHeader(messages.getMessage("de.bytestore.plugin.view.plugin/upload"));
+
+            HorizontalLayout layoutIO = uiComponents.create(HorizontalLayout.class);
+
+            CodeEditor editorIO = uiComponents.create(CodeEditor.class);
+            editorIO.setValue(e.getMessage());
+            editorIO.setReadOnly(true);
+
+            layoutIO.add(new Paragraph(messageBundle.formatMessage("uploadFailed", fileName)));
+            layoutIO.add(editorIO);
+
+            dialogIO.withContent(layoutIO);
+            dialogIO.open();
         }
-
 
     }
 
