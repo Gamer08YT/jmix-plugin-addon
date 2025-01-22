@@ -150,10 +150,24 @@ public class PluginService {
      * It ensures that the current state of the plugins is reset and reinitialized properly.
      */
     public void reload() {
+        // Refresh Update Repository.
         updateService.refresh();
-        managerIO.stopPlugins();
+
+        // Unload Plugins.
         managerIO.unloadPlugins();
-        managerIO.init();
+
+        // Load Plugins again.
+        managerIO.loadPlugins();
+
+        // Enable not disabled plugins.
+        managerIO.getPlugins().forEach(pluginWrapper -> {
+            String idIO = pluginWrapper.getPluginId();
+
+            if (!pluginWrapper.getPluginState().equals(PluginState.DISABLED)) {
+                // Load Plugin again.
+                managerIO.startPlugin(idIO);
+            }
+        });
     }
 
 
