@@ -37,10 +37,12 @@ public class PluginUploadView extends StandardView {
     @ViewComponent
     private JmixButton pluginSubmit;
 
+    private String fileName;
+
     @Subscribe("pluginArchive")
     public void onPluginArchiveFileUploadSucceeded(final FileUploadSucceededEvent<FileUploadField> event) {
         // Access the uploaded file information:
-        String fileName = event.getFileName();
+        fileName = event.getFileName();
         byte[] fileContent = event.getSource().getValue();
 
         // Perform your logic to handle the fileContent:
@@ -86,6 +88,8 @@ public class PluginUploadView extends StandardView {
 
     @Subscribe(id = "pluginSubmit", subject = "clickListener")
     public void onPluginSubmitClick(final ClickEvent<JmixButton> event) {
+        pluginService.loadMovedPlugin(fileName);
+
         this.close(StandardOutcome.SAVE);
     }
 

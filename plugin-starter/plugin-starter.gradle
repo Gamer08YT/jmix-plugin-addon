@@ -15,3 +15,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
 }
 
+configurations.configureEach {
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+}
+

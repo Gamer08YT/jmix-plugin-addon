@@ -559,5 +559,14 @@ public class PluginService {
     public boolean removeTemp(String fileName) {
         return new File(getTemp() + fileName).delete();
     }
+
+    /**
+     * Loads a plugin that has been moved to a new location, specified by its file name.
+     *
+     * @param fileName the name of the file representing the moved plugin to be loaded.
+     */
+    public void loadMovedPlugin(String fileName) {
+        managerIO.loadPlugin(Paths.get(getHome() + fileName));
+    }
 }
 
