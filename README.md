@@ -24,6 +24,14 @@ The following table lists the add-on versions compatible with different Jmix pla
     ```
 2. Make sure to replace `<addon-version>` with the compatible version mentioned in the table above.
 
+## JPA
+
+To access JPA Objects you need to implement the Eclipse Persistence Lib otherwise you get an Error.
+
+```groovy
+compileOnly 'org.eclipse.persistence:org.eclipse.persistence.jpa'
+```
+
 ## Provided Views
 
 The Add-on comes with 4 included Views.
