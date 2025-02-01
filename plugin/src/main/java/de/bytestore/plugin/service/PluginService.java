@@ -504,7 +504,10 @@ public class PluginService {
     }
 
     /**
-     * Retrieves the instance of*/
+     * Retrieves the instance of SpringRuntimePluginManager.
+     *
+     * @return the current instance of SpringRuntimePluginManager
+     */
     public SpringRuntimePluginManager getManager() {
         return managerIO;
     }
