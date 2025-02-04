@@ -124,6 +124,14 @@ To enable exact version checks, you need to add this line to your `application.p
 plugins.version.exact=true
 ```
 
+## Troubleshooting:
+
+No Extensions getting found? 
+ 
+Please enable Annotations for your Project. see [PF4J Troubleshooting](https://pf4j.org/doc/troubleshooting.html)
+
+![annotation.png.png](assets/img/annotation.png)
+
 ## Screenshots
 
 ![List View](assets/img/list-view.png)
