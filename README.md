@@ -126,11 +126,17 @@ plugins.version.exact=true
 
 ## Troubleshooting:
 
-No Extensions getting found? 
- 
+No Extensions getting found?
+
 Please enable Annotations for your Project. see [PF4J Troubleshooting](https://pf4j.org/doc/troubleshooting.html)
 
 ![annotation.png.png](assets/img/annotation.png)
+
+If you use Gradle please add following, to your ``build.gradle``.
+
+```groovy
+annotationProcessor(group: 'org.pf4j', name: 'pf4j', version: "<pf4jVersion>")
+``` 
 
 ## Screenshots
 
