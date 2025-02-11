@@ -11,6 +11,15 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * PluginData represents an entity that stores metadata, configurations, or other key-value
+ * pair data related to plugins in the system. This class is annotated as a Jmix entity
+ * to support ORM (Object Relational Mapping) and framework-specific features.
+ *
+ * This entity supports auditing features (track creation and modification details)
+ * and can be extended as needed for further customization or added relationships
+ * with other entity types such as plugins or repositories.
+ */
 @JmixEntity
 @Table(name = "PLUGIN_DATA")
 @Entity(name = "hotspot_PluginData")

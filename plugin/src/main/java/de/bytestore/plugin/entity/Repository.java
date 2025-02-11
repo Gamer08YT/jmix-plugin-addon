@@ -14,6 +14,16 @@ import org.springframework.data.annotation.CreatedDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Represents a repository entity used for plugin management.
+ *
+ * This entity stores information about a repository including its URI, a flag indicating
+ * whether the repository is enabled, and metadata related to its creation. It supports
+ * tracking of creation details such as the user who created the entity and the creation
+ * timestamp.
+ *
+ * The repository can be uniquely identified by its ID, which is a UUID.
+ */
 @JmixEntity
 @Table(name = "PLUGIN_REPOSITORY")
 @Entity(name = "plugin_Repository")

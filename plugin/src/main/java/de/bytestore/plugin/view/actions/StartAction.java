@@ -15,6 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Represents an action to start a plugin. This action ensures that the selected plugin
+ * is in a state where it can be started and provides functionality to trigger the
+ * starting of the plugin.
+ *
+ * This action is visually represented with a play icon and its availability
+ * depends on the selected item's state through selection updates.
+ *
+ * @param <E> the type of entity this action handles
+ */
 @ActionType("startPlugin")
 public class StartAction<E> extends ItemTrackingAction<E> {
     private static final Logger log = LoggerFactory.getLogger(StartAction.class);

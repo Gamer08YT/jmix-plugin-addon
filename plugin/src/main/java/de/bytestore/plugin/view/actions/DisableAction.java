@@ -13,6 +13,17 @@ import io.jmix.flowui.action.list.ItemTrackingAction;
 import io.jmix.flowui.view.MessageBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * The DisableAction class represents an action to disable a specific plugin
+ * within the application. This action can be performed on an item selection
+ * within the user interface and utilizes services for plugin management
+ * and notifications to handle the plugin's state and provide user feedback.
+ *
+ * @param <E> The type of items this action is applied to.
+ *
+ * Annotations:
+ * - {@code @ActionType("disablePlugin")}: Identifies this action with the type "disablePlugin".
+ */
 @ActionType("disablePlugin")
 public class DisableAction<E> extends ItemTrackingAction<E> {
     private MessageBundle messageBundle;

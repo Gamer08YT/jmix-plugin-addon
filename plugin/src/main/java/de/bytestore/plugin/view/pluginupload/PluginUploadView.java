@@ -19,6 +19,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * PluginUploadView is a user interface class responsible for managing the plugin upload process.
+ * It handles the upload, validation, and storage of plugin files while providing user feedback
+ * throughout the process.
+ *
+ * Key functionality includes:
+ * - Handling file upload events to process plugin archives.
+ * - Validating uploaded plugin files and providing appropriate feedback in case of issues.
+ * - Enabling or disabling actions based on plugin validation results.
+ * - Providing a user interface for completing the plugin upload process.
+ *
+ * This class interacts with several services and components:
+ * - {@link PluginService} for plugin-related operations such as writing to temporary directories,
+ *   validating plugins, and moving plugins to their final destination.
+ * - {@link UiComponents} for dynamically creating user interface components.
+ * - {@link Dialogs} for displaying feedback dialogs to the user.
+ * - {@link MessageBundle} and {@link Messages} for localized messaging.
+ *
+ * Event subscriptions:
+ * - Processes file upload success events to handle the plugin archive.
+ * - Handles button click events for finalizing the plugin submission process.
+ */
 @Route(value = "plugin-upload-view", layout = DefaultMainViewParent.class)
 @ViewController(id = "plugin_PluginUploadView")
 @ViewDescriptor(path = "plugin-upload-view.xml")

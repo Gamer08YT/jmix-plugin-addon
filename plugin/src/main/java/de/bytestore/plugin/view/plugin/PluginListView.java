@@ -30,6 +30,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A list view class for managing and displaying a collection of {@link Plugin} objects. This view
+ * extends the {@link StandardListView} class to provide enhanced functionality, including data grid
+ * interactions and custom UI configurations specific to plugins.
+ *
+ * The `PluginListView` class supports updating plugin details, managing plugin states, and configuring
+ * visibility of actions and buttons based on user permissions.
+ *
+ * This view is associated with the `plugins` route and uses a specified XML descriptor file for
+ * the UI layout. Interaction with this view is facilitated by various injected services and components
+ * such as {@link PluginService}, {@link UpdateService}, and {@link Notifications}.
+ *
+ * Features provided by this class include:
+ * - Displaying plugin version and update availability.
+ * - Showing plugin state with color-coded badges.
+ * - Displaying required versions, if version checking is enabled.
+ * - Background task management for plugin updates.
+ * - Button visibility control based on permissions.
+ * - Grid action visibility control based on permissions.
+ *
+ * Dependencies and injected components used by this class include:
+ * - {@link PluginService} for managing plugin-related operations.
+ * - {@link UpdateService} for checking and applying plugin updates.
+ * - {@link Messages} and {@link MessageBundle} for localization support.
+ * - {@link Notifications} and {@link Dialogs} for user feedback and interactions.
+ * - {@link BackgroundWorker} for executing tasks asynchronously.
+ * - Various `JmixButton` components for enabling or disabling specific actions.
+ * - {@link DataGrid} to display and interact with the plugin list.
+ */
 @Route(value = "plugins", layout = DefaultMainViewParent.class)
 @ViewController(id = "plugin_Plugin.list")
 @ViewDescriptor(path = "plugin-list-view.xml")

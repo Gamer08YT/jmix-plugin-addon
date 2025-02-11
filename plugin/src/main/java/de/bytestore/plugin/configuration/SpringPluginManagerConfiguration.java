@@ -1,6 +1,5 @@
 package de.bytestore.plugin.configuration;
 
-import org.pf4j.spring.SpringPluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +7,19 @@ import org.springframework.core.env.Environment;
 
 import java.nio.file.Path;
 
+/**
+ * SpringPluginManagerConfiguration is a Spring configuration class that defines
+ * the setup for plugin management within a Spring application context.
+ *
+ * This class configures the {@link SpringRuntimePluginManager} bean, which serves
+ * as the plugin manager responsible for managing plugins at runtime. It is
+ * initialized with the plugin's home directory, which can be specified through
+ * application environment properties.
+ *
+ * The home directory for the plugins is resolved by reading the "plugins.home"
+ * property from the environment. If the property is not defined, a default value
+ * of "./plugins/" is used.
+ */
 @Configuration
 public class SpringPluginManagerConfiguration {
     @Autowired

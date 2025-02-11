@@ -12,6 +12,17 @@ import io.jmix.flowui.action.list.ItemTrackingAction;
 import io.jmix.flowui.view.MessageBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * The EnableAction class provides the functionality to enable a plugin within an application.
+ * It extends the ItemTrackingAction class and incorporates functionalities for interaction
+ * with plugin services, notification handling, and UI-based enablement controls based on permissions.
+ *
+ * This action is associated with setting a specific plugin to an enabled state. The class checks
+ * the current state of a plugin and ensures only disabled plugins can be enabled. Notifications
+ * are used to inform the user about the success or failure of the enablement action.
+ *
+ * @param <E> the type of entity handled by this action
+ */
 @ActionType("enablePlugin")
 public class EnableAction<E> extends ItemTrackingAction<E> {
     private MessageBundle messageBundle;

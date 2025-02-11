@@ -6,6 +6,13 @@ import io.jmix.core.event.EntitySavingEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * RepositoryEventListener is responsible for handling events related to the {@link Repository} entity.
+ * It listens to the saving event of a {@link Repository} and triggers updates to reload repository data.
+ *
+ * This class interacts with the {@link UpdateService} to perform necessary operations
+ * upon the occurrence of repository-related events.
+ */
 @Component("plugin_RepositoryEventListener")
 public class RepositoryEventListener {
 

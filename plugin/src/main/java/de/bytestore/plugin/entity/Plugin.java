@@ -4,6 +4,12 @@ import io.jmix.core.entity.annotation.JmixId;
 import io.jmix.core.metamodel.annotation.InstanceName;
 import io.jmix.core.metamodel.annotation.JmixEntity;
 
+/**
+ * Represents a plugin entity that contains metadata about a plugin in the system.
+ *
+ * The state of the plugin is represented as a String but corresponds to an enum value
+ * from the {@link PluginState} enum, which provides possible states a plugin can have.
+ */
 @JmixEntity(name = "plugin_Plugin")
 public class Plugin {
     @JmixId

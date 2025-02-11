@@ -16,6 +16,21 @@ import org.springframework.context.annotation.PropertySource;
 
 import java.util.Collections;
 
+/**
+ * PluginConfiguration class serves as a central configuration for the "de.bytestore.plugin" module.
+ *
+ * This configuration integrates with the Jmix framework's modular architecture and is responsible
+ * for defining the following:
+ *
+ * - Component scanning for Spring-managed beans within the module.
+ * - Automatic configuration properties scanning.
+ * - Dependency declaration for other Jmix modules such as EclipselinkConfiguration and FlowuiConfiguration.
+ * - Property source declaration for loading module-specific properties.
+ *
+ * The class provides bean definitions for:
+ * - ViewControllersConfiguration: Configures view controllers for the module.
+ * - ActionsConfiguration: Configures actions for UI elements in the module.
+ */
 @Configuration
 @ComponentScan
 @ConfigurationPropertiesScan

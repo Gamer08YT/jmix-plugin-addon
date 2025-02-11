@@ -23,6 +23,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A service class responsible for managing updates to plugins, repositories, and application versions.
+ * This class provides methods to handle plugin updates, check for update availability,
+ * reload repositories, and retrieve versioning information.
+ */
 @Component
 @Service
 public class UpdateService {

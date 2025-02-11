@@ -15,6 +15,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * The StopAction class represents an action that stops a plugin in the system.
+ * This action checks the state of the plugin to ensure it is in the STARTED state
+ * before allowing the stop operation. It displays notifications for both success
+ * and error scenarios and logs any errors encountered during the process.
+ *
+ * @param <E> the type of the items tracked by this action
+ *
+ * Annotations:
+ * - @ActionType: Represents the action type, defined as "stopPlugin".
+ *
+ * Dependencies:
+ * - Logger: Used for logging error messages.
+ * - MessageBundle: Handles localization and message configuration.
+ * - Notifications: Manages user notifications for success or failure messages.
+ * - PluginService: Manages operations on plugins, including stopping them.
+ *
+ * Constructor:
+ * - StopAction(String id): Initializes the action with an identifier and sets the default
+ *   text and icon for the action button.
+ *
+ * Methods:
+ * - setMessages(MessageBundle messageBundle): Configures the message bundle and localizes
+ *   the action's text. Also enables visibility based on UI permissions.
+ * - onSelectionChange(SelectionEvent<?, E> event): Updates the enabled state of the action
+ *   based on the selected item's state, ensuring the action is available only if the plugin
+ *   is in the STARTED state.
+ * - actionPerform(Component componentIO): Performs the stop operation on the selected plugin.
+ *   It communicates with the PluginService to stop the plugin and shows a notification based
+ *   on the result of the operation. Logs an error message if the operation fails.
+ */
 @ActionType("stopPlugin")
 public class StopAction<E> extends ItemTrackingAction<E> {
     private static final Logger log = LoggerFactory.getLogger(StopAction.class);
