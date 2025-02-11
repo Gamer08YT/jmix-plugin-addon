@@ -604,7 +604,7 @@ public class PluginService {
      * @param valueIO the value to associate with the specified key
      */
     public void setValue(String keyIO, Object valueIO) {
-        PluginData dataIO = getObjectOrCreate(keyIO);
+        PluginData dataIO = getValueOrCreate(keyIO);
 
         dataIO.setValue(valueIO.toString());
 
@@ -620,7 +620,7 @@ public class PluginService {
      * @param keyIO the identifier for the {@link PluginData} to retrieve or create
      * @return the existing or newly created {@link PluginData} object
      */
-    private PluginData getObjectOrCreate(String keyIO) {
+    private PluginData getValueOrCreate(String keyIO) {
         Optional<PluginData> dataIO = getObject(keyIO);
 
         if (dataIO.isEmpty()) {
@@ -642,7 +642,7 @@ public class PluginService {
      * @param defaultIO  the value to return if the specified key does not exist
      * @return the value associated with the specified key, or the default value if the key does not exist
      */
-    public String getValue(String keyIO, String defaultIO) {
+    public Object getValue(String keyIO, Object defaultIO) {
         Optional<PluginData> dataIO = getObject(keyIO);
 
         if (dataIO.isEmpty()) {
