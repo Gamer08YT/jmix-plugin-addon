@@ -2,8 +2,10 @@ package de.bytestore.plugin.service;
 
 import de.bytestore.plugin.configuration.SpringRuntimePluginManager;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.entity.PluginData;
 import io.jmix.core.AccessManager;
 import io.jmix.core.DataManager;
+import io.jmix.core.UnconstrainedDataManager;
 import io.jmix.core.accesscontext.SpecificOperationAccessContext;
 import io.jmix.flowui.download.Downloader;
 import org.pf4j.*;
@@ -24,6 +26,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The PluginService class is responsible for managing the lifecycle, configuration, and operations
@@ -40,6 +43,7 @@ import java.util.List;
 @Service
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
+    private final UnconstrainedDataManager unconstrainedDataManager;
 
     @Autowired
     private UpdateService updateService;
@@ -61,6 +65,10 @@ public class PluginService {
 
     @Autowired
     private Downloader downloader;
+
+    public PluginService(UnconstrainedDataManager unconstrainedDataManager) {
+        this.unconstrainedDataManager = unconstrainedDataManager;
+    }
 
     /**
      * Writes the given content into a temporary file with the specified name.
@@ -584,6 +592,74 @@ public class PluginService {
      */
     public void loadMovedPlugin(String fileName) {
         managerIO.loadPlugin(Paths.get(getHome() + fileName));
+    }
+
+
+    /**
+     * Sets the value associated with a given key in the plugin data. If the plugin data
+     * associated with the key does not exist, it is created. The provided value is
+     * converted to a string before being saved.
+     *
+     * @param keyIO   the identifier for the plugin data to retrieve or create
+     * @param valueIO the value to associate with the specified key
+     */
+    public void setValue(String keyIO, Object valueIO) {
+        PluginData dataIO = getObjectOrCreate(keyIO);
+
+        dataIO.setValue(valueIO.toString());
+
+        unconstrainedDataManager.save(dataIO);
+    }
+
+    /**
+     * Retrieves or creates a {@link PluginData} object based on the given identifier.
+     * If a PluginData object with the specified identifier exists, it is returned;
+     * otherwise, a new PluginData object is created, initialized with the given identifier,
+     * and returned.
+     *
+     * @param keyIO the identifier for the {@link PluginData} to retrieve or create
+     * @return the existing or newly created {@link PluginData} object
+     */
+    private PluginData getObjectOrCreate(String keyIO) {
+        Optional<PluginData> dataIO = getObject(keyIO);
+
+        if (dataIO.isEmpty()) {
+            PluginData newIO = unconstrainedDataManager.create(PluginData.class);
+
+            newIO.setId(keyIO);
+
+            return newIO;
+        }
+
+        return dataIO.get();
+    }
+
+    /**
+     * Retrieves the value associated with the specified key. If the key does not exist,
+     * returns the provided default value.
+     *
+     * @param keyIO      the identifier for the plugin data to retrieve
+     * @param defaultIO  the value to return if the specified key does not exist
+     * @return the value associated with the specified key, or the default value if the key does not exist
+     */
+    public String getValue(String keyIO, String defaultIO) {
+        Optional<PluginData> dataIO = getObject(keyIO);
+
+        if (dataIO.isEmpty()) {
+            return defaultIO;
+        }
+
+        return dataIO.get().getValue();
+    }
+
+    /**
+     * Retrieves an optional PluginData object based on the given identifier.
+     *
+     * @param keyIO the identifier of the PluginData to be loaded
+     * @return an Optional containing the PluginData if it exists, else empty
+     */
+    private Optional<PluginData> getObject(String keyIO) {
+        return unconstrainedDataManager.load(PluginData.class).id(keyIO).optional();
     }
 }
 

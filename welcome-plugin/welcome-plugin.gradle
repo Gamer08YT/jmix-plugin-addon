@@ -2,9 +2,10 @@ archivesBaseName = 'welcome-plugin'
 
 dependencies {
     compileOnly project(":plugin")
-    compileOnly(group: 'org.pf4j', name: 'pf4j') {
+    compileOnly(group: 'org.pf4j', name: 'pf4j', version: '3.13.0') {
         exclude group: "org.slf4j"
     }
+    annotationProcessor(group: 'org.pf4j', name: 'pf4j', version: '3.13.0')
     //annotationProcessor(group: 'org.pf4j', name: 'pf4j')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
