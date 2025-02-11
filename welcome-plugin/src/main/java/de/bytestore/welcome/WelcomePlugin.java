@@ -2,14 +2,17 @@ package de.bytestore.welcome;
 
 import de.bytestore.plugin.JmixPlugin;
 import de.bytestore.plugin.service.PluginService;
+import de.bytestore.welcome.extensions.ConfigExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
  * WelcomePlugin extends the functionality of the JmixPlugin to add custom behavior
- * and lifecycle management for the plugin. It utilizes the PF4J framework and
+ * and lifecycle management for the plugin. It uses the PF4J framework and
  * integrates with the Jmix application context to provide seamless plugin operations.
  *
  * Responsibilities:
@@ -77,5 +80,26 @@ public class WelcomePlugin extends JmixPlugin {
     @Override
     public void stop() {
         log.info("WelcomePlugin.stop()");
+    }
+
+    /**
+     * Creates and initializes the application context specific to the WelcomePlugin.
+     * This method configures a Spring `AnnotationConfigApplicationContext` with a custom
+     * class loader, registers additional plugin-specific extensions, and scans a base
+     * package for components. Once everything is configured, the context is refreshed
+     * to complete its initialization.
+     *
+     * @return the fully initialized Spring `ApplicationContext` for the WelcomePlugin.
+     */
+    @Override
+    protected ApplicationContext createApplicationContext() {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+        applicationContext.setClassLoader(getWrapper().getPluginClassLoader());
+        applicationContext.register(ConfigExtension.class);
+        applicationContext.scan("de.bytestore.welcome");
+
+        applicationContext.refresh();
+
+        return applicationContext;
     }
 }

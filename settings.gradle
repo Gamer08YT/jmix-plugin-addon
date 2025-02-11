@@ -8,5 +8,3 @@ include 'welcome-plugin'
 rootProject.children.each { p1 ->
     p1.buildFileName = "${p1.name}.gradle"
 }
-
-
