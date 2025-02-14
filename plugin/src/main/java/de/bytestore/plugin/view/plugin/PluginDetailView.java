@@ -88,6 +88,15 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     }
 
 
+    /**
+     * Loads a plugin entity based on the given load context.
+     *
+     * This method uses the provided load context's identifier to retrieve a plugin
+     * from an external storage and ensures that the loaded entity's state is correctly set to not-new.
+     *
+     * @param loadContext the context containing the identifier of the plugin to be loaded
+     * @return the loaded Plugin entity, or null if the identifier is invalid or no plugin is found
+     */
     @Install(to = "pluginDl", target = Target.DATA_LOADER)
     private Plugin customerDlLoadDelegate(final LoadContext<Plugin> loadContext) {
         Object id = loadContext.getId();
@@ -96,6 +105,14 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
         return pluginService.getPluginCasted(id);
     }
 
+    /**
+     * Persists the given save context by saving the currently edited plugin entity into an external storage.
+     * This method ensures that the plugin entity is properly updated and returns it
+     * as part of the result set in a not-new state.
+     *
+     * @param saveContext the context containing details of the entities to be saved
+     * @return a set of saved entities, which includes the plugin entity
+     */
     @Install(target = Target.DATA_CONTEXT)
     private Set<Object> saveDelegate(final SaveContext saveContext) {
         Plugin entity = getEditedEntity();
