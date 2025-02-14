@@ -43,7 +43,9 @@ import java.util.Optional;
 @Service
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);
-    private final UnconstrainedDataManager unconstrainedDataManager;
+
+    @Autowired
+    private UnconstrainedDataManager unconstrainedDataManager;
 
     @Autowired
     private UpdateService updateService;
@@ -65,10 +67,6 @@ public class PluginService {
 
     @Autowired
     private Downloader downloader;
-
-    public PluginService(UnconstrainedDataManager unconstrainedDataManager) {
-        this.unconstrainedDataManager = unconstrainedDataManager;
-    }
 
     /**
      * Writes the given content into a temporary file with the specified name.

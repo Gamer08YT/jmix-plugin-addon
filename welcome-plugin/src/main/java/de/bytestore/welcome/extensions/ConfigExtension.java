@@ -41,7 +41,7 @@ public class ConfigExtension implements PluginConfigExtensionPoint {
     public List<com.vaadin.flow.component.Component> render() {
         List<Component> componentsIO = new java.util.ArrayList<>();
 
-        username.setValue(pluginService.getValue("welcome.username", "JmixUser"));
+        username.setValue((String) pluginService.getValue("welcome.username", "JmixUser"));
         checkbox.setValue((Boolean) pluginService.getValue("welcome.debug", false));
 
         componentsIO.add(username);
