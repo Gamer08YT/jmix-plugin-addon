@@ -109,9 +109,6 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
         List<Component> settingsUI = getSettingsUI();
 
-        log.info("A: {}", pluginService.getManager().getExtensions(PluginConfigExtensionPoint.class));
-        log.info("B: {}", pluginService.getManager().getExtensions(PluginConfigExtensionPoint.class), getEditedEntity().getId());
-
         if (!settingsUI.isEmpty()) {
             settingsLayout.add(settingsUI);
 
@@ -250,7 +247,12 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
      *
      * @return an instance of {@link PluginConfigExtensionPoint*/
     private PluginConfigExtensionPoint getPluginConfig() {
-        return ((PluginConfigExtensionPoint) pluginService.getExtension(PluginConfigExtensionPoint.class, getEditedEntity().getId()).get(0));
+        List<Object> objectsIO = pluginService.getExtension(PluginConfigExtensionPoint.class, getEditedEntity().getId());
+
+        if (objectsIO.isEmpty())
+            return null;
+        else
+            return (PluginConfigExtensionPoint) objectsIO.get(0);
     }
 
 }

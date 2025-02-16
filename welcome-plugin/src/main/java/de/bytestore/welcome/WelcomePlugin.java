@@ -3,6 +3,7 @@ package de.bytestore.welcome;
 import de.bytestore.plugin.JmixPlugin;
 import de.bytestore.welcome.extensions.ConfigExtension;
 import org.pf4j.PluginWrapper;
+import org.pf4j.spring.SpringPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
  * - Implements start and stop methods to customize the plugin's lifecycle behavior.
  */
 @Component
-public class WelcomePlugin extends JmixPlugin {
+public class WelcomePlugin extends SpringPlugin {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
