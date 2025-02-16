@@ -2,10 +2,10 @@ package de.bytestore.welcome.extensions;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.textfield.TextField;
+import de.bytestore.plugin.AutowireLoader;
 import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
 import de.bytestore.plugin.service.PluginService;
 import org.pf4j.Extension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,8 +14,10 @@ import java.util.List;
 @Extension
 public class ConfigExtension implements PluginConfigExtensionPoint {
 
-    @Autowired
-    private PluginService pluginService;
+    // Current Workaround for using external Beans...
+    // https://github.com/Gamer08YT/hostinger2024/blob/4062136bc1a8aa33bc80ba7ab9ced46892cb04b2/src/main/java/de/bytestore/hostinger/AutowireLoader.java#L19
+    // https://byte-storede.github.io/Hostinger-Docs/autowired.html
+    private final PluginService pluginService = AutowireLoader.getBean(PluginService.class);
 
     // Create Dummy Field.
     private final TextField username = new TextField("Username");
