@@ -9,6 +9,7 @@ dependencies {
     compileOnly(group: 'org.pf4j', name: 'pf4j', version: '3.13.0') {
         exclude group: "org.slf4j"
     }
+    annotationProcessor(group: 'org.pf4j', name: 'pf4j', version: "3.13.0")
     implementation 'io.jmix.flowui:jmix-flowui-starter'
     // https://mvnrepository.com/artifact/com.vaadin/flow
     compileOnly group: 'com.vaadin', name: 'flow', version: '24.6.5', ext: 'pom'

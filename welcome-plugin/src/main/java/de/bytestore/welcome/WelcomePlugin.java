@@ -1,11 +1,10 @@
 package de.bytestore.welcome;
 
 import de.bytestore.plugin.JmixPlugin;
-import de.bytestore.plugin.service.PluginService;
 import de.bytestore.welcome.extensions.ConfigExtension;
+import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
@@ -23,10 +22,6 @@ import org.springframework.stereotype.Component;
 public class WelcomePlugin extends JmixPlugin {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private PluginService pluginService;
-
-
     /**
      * Constructs a WelcomePlugin instance with the provided PluginWrapper.
      * This constructor initializes the plugin by passing the wrapper to
@@ -37,7 +32,7 @@ public class WelcomePlugin extends JmixPlugin {
      *                about the plugin, such as its metadata, class loader,
      *                and other attributes needed for initialization.
      */
-    public WelcomePlugin(org.pf4j.PluginWrapper wrapper) {
+    public WelcomePlugin(PluginWrapper wrapper) {
         super(wrapper);
     }
 
@@ -60,8 +55,8 @@ public class WelcomePlugin extends JmixPlugin {
     public void start() {
         log.info("WelcomePlugin.start()");
 
-        if ((Boolean) pluginService.getValue("welcome.debug", false))
-            log.info("Debug Mode is enabled.");
+//        if ((Boolean) pluginService.getValue("welcome.debug", false))
+//            log.info("Debug Mode is enabled.");
     }
 
     /**

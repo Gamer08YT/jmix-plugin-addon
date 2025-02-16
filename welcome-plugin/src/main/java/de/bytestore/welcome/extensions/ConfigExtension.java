@@ -1,16 +1,19 @@
 package de.bytestore.welcome.extensions;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.textfield.TextField;
 import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
 import de.bytestore.plugin.service.PluginService;
+import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@org.springframework.stereotype.Component
+@Component
+@Extension
 public class ConfigExtension implements PluginConfigExtensionPoint {
+
     @Autowired
     private PluginService pluginService;
 
@@ -39,7 +42,7 @@ public class ConfigExtension implements PluginConfigExtensionPoint {
      */
     @Override
     public List<com.vaadin.flow.component.Component> render() {
-        List<Component> componentsIO = new java.util.ArrayList<>();
+        List<com.vaadin.flow.component.Component> componentsIO = new java.util.ArrayList<>();
 
         username.setValue((String) pluginService.getValue("welcome.username", "JmixUser"));
         checkbox.setValue((Boolean) pluginService.getValue("welcome.debug", false));

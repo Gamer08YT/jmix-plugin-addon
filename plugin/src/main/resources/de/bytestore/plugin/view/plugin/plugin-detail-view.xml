@@ -15,20 +15,29 @@
         <action id="closeAction" type="detail_close"/>
     </actions>
     <layout>
-        <formLayout id="form" dataContainer="pluginDc">
-            <responsiveSteps>
-                <responsiveStep minWidth="0" columns="1"/>
-                <responsiveStep minWidth="40em" columns="2"/>
-            </responsiveSteps>
-            <textField readOnly="true" id="idField" property="id"/>
-            <textField readOnly="true" id="pathField" property="path"/>
-            <textField readOnly="true" id="descriptionField" property="description"/>
-            <textField readOnly="true" id="versionField" property="version"/>
-            <textField readOnly="true" id="licenseField" property="license"/>
-            <textField readOnly="true" id="providerField" property="provider"/>
-            <textField readOnly="true" id="requiresField" property="requires"/>
-            <select readOnly="true" id="stateField" property="state"/>
-        </formLayout>
+        <tabSheet themeNames="bordered centered" width="100%">
+            <tab id="general" label="msg://general">
+                <formLayout id="form" dataContainer="pluginDc">
+                    <responsiveSteps>
+                        <responsiveStep minWidth="0" columns="1"/>
+                        <responsiveStep minWidth="40em" columns="2"/>
+                    </responsiveSteps>
+                    <textField readOnly="true" id="idField" property="id"/>
+                    <textField readOnly="true" id="pathField" property="path"/>
+                    <textField readOnly="true" id="descriptionField" property="description"/>
+                    <textField readOnly="true" id="versionField" property="version"/>
+                    <textField readOnly="true" id="licenseField" property="license"/>
+                    <textField readOnly="true" id="providerField" property="provider"/>
+                    <textField readOnly="true" id="requiresField" property="requires"/>
+                    <select readOnly="true" id="stateField" property="state"/>
+                </formLayout>
+            </tab>
+            <tab id="settings" label="msg://settings">
+                <vbox id="settingsLayout">
+                    <p id="noSettingsNote" text="msg://noSettingsNote"/>
+                </vbox>
+            </tab>
+        </tabSheet>
         <hbox id="detailActions">
             <button id="closeButton" action="closeAction"/>
             <button id="downloadButton" icon="lumo:download" text="msg://download"/>

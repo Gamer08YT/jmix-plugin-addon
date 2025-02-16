@@ -1,10 +1,15 @@
 package de.bytestore.plugin.view.plugin;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
 import de.bytestore.plugin.service.PluginService;
+import io.jmix.core.EntityStates;
 import io.jmix.core.LoadContext;
 import io.jmix.core.SaveContext;
 import io.jmix.flowui.Dialogs;
@@ -18,8 +23,12 @@ import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static org.reflections.Reflections.log;
 
 /**
  * PluginDetailView is responsible for providing the detailed view of a Plugin entity.
@@ -74,19 +83,41 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @ViewComponent
     private JmixButton removeButton;
+
     @Autowired
     private Notifications notifications;
+
     @Autowired
     private ViewNavigators viewNavigators;
+
     @Autowired
     private BackgroundWorker backgroundWorker;
+
+    @Autowired
+    private EntityStates entityStates;
+
+    @ViewComponent
+    private VerticalLayout settingsLayout;
+
+    @ViewComponent
+    private Paragraph noSettingsNote;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
         downloadButton.setVisible(pluginService.isPermitted("downloadPlugin"));
         removeButton.setVisible(pluginService.isPermitted("deletePlugin"));
-    }
 
+        List<Component> settingsUI = getSettingsUI();
+
+        log.info("A: {}", pluginService.getManager().getExtensions(PluginConfigExtensionPoint.class));
+        log.info("B: {}", pluginService.getManager().getExtensions(PluginConfigExtensionPoint.class), getEditedEntity().getId());
+
+        if (!settingsUI.isEmpty()) {
+            settingsLayout.add(settingsUI);
+
+            noSettingsNote.setVisible(false);
+        }
+    }
 
     /**
      * Loads a plugin entity based on the given load context.
@@ -98,12 +129,30 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
      * @return the loaded Plugin entity, or null if the identifier is invalid or no plugin is found
      */
     @Install(to = "pluginDl", target = Target.DATA_LOADER)
-    private Plugin customerDlLoadDelegate(final LoadContext<Plugin> loadContext) {
+    private Plugin pluginDlLoadDelegate(final LoadContext<Plugin> loadContext) {
         Object id = loadContext.getId();
-        // Here you can load the entity by id from an external storage.
-        // Set the loaded entity to the not-new state using EntityStates.setNew(entity, false).
-        return pluginService.getPluginCasted(id);
+
+        Plugin objectIO = pluginService.getPluginCasted(id);
+
+        // Set the loaded entity to the not-new state.
+        entityStates.setNew(objectIO, false);
+
+        return objectIO;
     }
+
+    /**
+     * Triggered before saving the entity in the view. This method logs the plugin
+     * being saved and invokes the save operation for the corresponding plugin configuration.
+     *
+     * @param event the event containing details about the save operation being executed
+     */
+    @Subscribe
+    public void onBeforeSave(final BeforeSaveEvent event) {
+        log.info("Saving Settings for Plugin: {}.", getEditedEntity().getId());
+
+        this.getPluginConfig().save();
+    }
+
 
     /**
      * Persists the given save context by saving the currently edited plugin entity into an external storage.
@@ -177,5 +226,31 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
         }), new DialogAction(DialogAction.Type.CANCEL)).open();
     }
 
+    /**
+     * Retrieves the settings UI components for the plugin.
+     *
+     * This method invokes the rendering process of the plugin configuration,
+     * generating a list of UI components that represent the settings interface
+     * for the current plugin.
+     *
+     * @return a list of Component objects that represent the plugin's settings UI.
+     */
+    private List<Component> getSettingsUI() {
+        if (getPluginConfig() != null)
+            return getPluginConfig().render();
+        return new ArrayList<>();
+    }
+
+    /**
+     * Retrieves the plugin configuration extension instance for the currently edited entity.
+     *
+     * This method fetches an instance of the {@link PluginConfigExtensionPoint} associated with
+     * the plugin identified by the ID of the currently edited entity and retrieves the first
+     * extension available for the given plugin.
+     *
+     * @return an instance of {@link PluginConfigExtensionPoint*/
+    private PluginConfigExtensionPoint getPluginConfig() {
+        return ((PluginConfigExtensionPoint) pluginService.getExtension(PluginConfigExtensionPoint.class, getEditedEntity().getId()).get(0));
+    }
 
 }

@@ -492,7 +492,7 @@ public class PluginService {
      * @param pluginId the identifier of the plugin associated with the extensions
      * @return a list of extensions corresponding to the given class and plugin identifier
      */
-    public List getExtension(Class classIO, String pluginId) {
+    public List<Object> getExtension(Class classIO, String pluginId) {
         return managerIO.getExtensions(classIO, pluginId);
     }
 
