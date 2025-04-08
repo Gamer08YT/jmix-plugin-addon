@@ -43,4 +43,13 @@ public class AutowireLoader implements ApplicationContextAware {
     public static <T> T getBean(Class<T> beanClass) {
         return context.getBean(beanClass);
     }
+
+    /**
+     * Checks whether the Spring ApplicationContext is initialized and ready to use.
+     *
+     * @return true if the ApplicationContext has been set, false otherwise
+     */
+    public static boolean isReady() {
+        return context != null;
+    }
 }
