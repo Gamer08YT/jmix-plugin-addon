@@ -28,7 +28,7 @@ import java.util.List;
  * This class provides methods to handle plugin updates, check for update availability,
  * reload repositories, and retrieve versioning information.
  */
-@Component
+@Component("plugin_UpdateService")
 @Service
 public class UpdateService {
     private static final Logger log = LoggerFactory.getLogger(UpdateService.class);

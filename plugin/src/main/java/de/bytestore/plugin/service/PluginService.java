@@ -40,7 +40,7 @@ import java.util.Optional;
  * Core operations include plugin loading, starting, stopping, and retrieving plugin states, as well as
  * directory management for plugin storage.
  */
-@Component
+@Component("plugin_PluginService")
 @Service
 public class PluginService {
     private static final Logger log = LoggerFactory.getLogger(PluginService.class);

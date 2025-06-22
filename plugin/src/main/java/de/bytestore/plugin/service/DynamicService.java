@@ -16,7 +16,7 @@ import org.springframework.web.servlet.ViewResolver;
  * This class utilizes a {@code ViewRegistry} for loading view components and handles
  * session-specific route configurations.
  */
-@Component
+@Component("plugin_DynamicService")
 public class DynamicService {
     private static final Logger log = LoggerFactory.getLogger(DynamicService.class);
 
