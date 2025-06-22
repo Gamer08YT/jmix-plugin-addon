@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  * - Implements start and stop methods to customize the plugin's lifecycle behavior.
  */
 @Component
-public class WelcomePlugin extends SpringPlugin {
+public class WelcomePlugin extends JmixPlugin {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
