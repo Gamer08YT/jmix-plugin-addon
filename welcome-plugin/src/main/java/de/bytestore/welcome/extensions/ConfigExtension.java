@@ -4,10 +4,12 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.textfield.TextField;
 import de.bytestore.plugin.AutowireLoader;
 import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
+import de.bytestore.plugin.service.ConfigService;
 import de.bytestore.plugin.service.PluginService;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -24,6 +26,11 @@ public class ConfigExtension implements PluginConfigExtensionPoint {
 
     // Create Dummy Checkbox.
     private final Checkbox checkbox = new Checkbox("Enable Debug Mode.");
+    private final ConfigService configService;
+
+    public ConfigExtension(ConfigService configService) {
+        this.configService = configService;
+    }
 
 
     /**
@@ -33,8 +40,8 @@ public class ConfigExtension implements PluginConfigExtensionPoint {
      */
     @Override
     public void save() {
-        pluginService.setValue("welcome.username", username.getValue());
-        pluginService.setValue("welcome.debug", checkbox.getValue());
+        configService.setValue("welcome.username", username.getValue());
+        configService.setValue("welcome.debug", checkbox.getValue());
     }
 
     /**
@@ -44,10 +51,10 @@ public class ConfigExtension implements PluginConfigExtensionPoint {
      */
     @Override
     public List<com.vaadin.flow.component.Component> render() {
-        List<com.vaadin.flow.component.Component> componentsIO = new java.util.ArrayList<>();
+        List<com.vaadin.flow.component.Component> componentsIO = new ArrayList<>();
 
-        username.setValue((String) pluginService.getValue("welcome.username", "JmixUser"));
-        checkbox.setValue((Boolean) pluginService.getValue("welcome.debug", false));
+        username.setValue((String) configService.getValue("welcome.username", "JmixUser"));
+        checkbox.setValue((Boolean) configService.getValue("welcome.debug", false));
 
         componentsIO.add(username);
         componentsIO.add(checkbox);
