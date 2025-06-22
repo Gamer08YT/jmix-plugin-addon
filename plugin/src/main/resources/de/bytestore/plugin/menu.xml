@@ -9,4 +9,5 @@
           title="msg://de.bytestore.plugin.view.repository/repositoryListView.title"/>
     <item view="plugin_PluginSettingsView"
           title="msg://de.bytestore.plugin.view.pluginsettings/pluginSettingsView.title"/>
+    <item view="plugin_BlankView" title="msg://de.bytestore.welcome.view.blank/blankView.title"/>
 </menu-config>
