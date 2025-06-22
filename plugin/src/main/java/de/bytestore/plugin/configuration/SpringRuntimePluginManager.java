@@ -14,13 +14,23 @@ public class SpringRuntimePluginManager extends SpringPluginManager {
     public static RuntimeMode runtimeMode = RuntimeMode.DEPLOYMENT;
 
 
+    /**
+     * Constructs a new SpringRuntimePluginManager instance with the specified plugin root directories.
+     * This manager is used for managing and loading plugins in a Spring application context.
+     *
+     * @param pluginsRoots an array of {@link Path} objects representing the directories
+     *                     where plugins are located. These paths are used as the root directories
+     *                     for managing plugins at runtime.
+     */
     public SpringRuntimePluginManager(Path... pluginsRoots) {
         super(pluginsRoots);
     }
 
     /**
+     * Retrieves the current runtime mode of the plugin manager.
      *
-     * @return
+     * @return the current runtime mode, which indicates whether the plugin manager
+     *         is operating in development or deployment mode.
      */
     @Override
     public RuntimeMode getRuntimeMode() {

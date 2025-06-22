@@ -13,8 +13,11 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,8 +31,9 @@ import java.util.Set;
  * Spring-managed environment without the need for explicit bean declarations,
  * enhancing modular*/
 @Configuration
-public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor {
+public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
     private static final Logger log = LoggerFactory.getLogger(PluginViewScanner.class);
+    private ApplicationContext applicationContext;
 
     /**
      * Processes the Spring bean definition registry by scanning the classpath
@@ -88,5 +92,31 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor {
     @Override
     public void postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory beanFactory) {
         // Nor implemented.
+    }
+
+    /**
+     * Retrieves a list of all beans annotated with {@link PluginView} from the application context.
+     * These beans represent plugin views that are integrated into the current Spring application context.
+     *
+     * @return a list of objects representing plugin views annotated with {@link PluginView}.
+     */
+    public List<Object> getPluginViews() {
+        return applicationContext.getBeansWithAnnotation(PluginView.class).values().stream().toList();
+    }
+
+    /**
+     * Sets the application context for the implementing class. This method is part
+     * of the {@link ApplicationContextAware} interface and allows
+     * the implementing bean to be aware of its owning {@link ApplicationContext}.
+     *
+     * @param applicationContext the {@link ApplicationContext} to be set, providing
+     *                           access to the Spring application context and its
+     *                           functionalities.
+     * @throws BeansException if an error occurs while accessing the application context.
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+        
     }
 }
