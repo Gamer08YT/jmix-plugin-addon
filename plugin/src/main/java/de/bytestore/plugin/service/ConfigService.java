@@ -4,6 +4,7 @@ import de.bytestore.plugin.entity.PluginData;
 import io.jmix.core.UnconstrainedDataManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
@@ -14,11 +15,11 @@ import java.util.Optional;
  * with default fallbacks, and handling the creation of new configuration entries
  * if they do not already exist.
  */
-@Component("plugin_ConfigService")
+@Component
+@Service
 public class ConfigService {
     @Autowired
     private UnconstrainedDataManager unconstrainedDataManager;
-
 
     /**
      * Sets the value associated with a given key in the plugin data. If the plugin data

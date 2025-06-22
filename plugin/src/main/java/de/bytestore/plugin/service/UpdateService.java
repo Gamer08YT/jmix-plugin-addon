@@ -1,5 +1,6 @@
 package de.bytestore.plugin.service;
 
+import de.bytestore.plugin.AutowireLoader;
 import de.bytestore.plugin.configuration.JMIXUpdateManager;
 import de.bytestore.plugin.configuration.SpringRuntimePluginManager;
 import de.bytestore.plugin.entity.Plugin;
@@ -28,7 +29,7 @@ import java.util.List;
  * This class provides methods to handle plugin updates, check for update availability,
  * reload repositories, and retrieve versioning information.
  */
-@Component("plugin_UpdateService")
+@Component
 @Service
 public class UpdateService {
     private static final Logger log = LoggerFactory.getLogger(UpdateService.class);
@@ -47,7 +48,6 @@ public class UpdateService {
 
     @Autowired
     private Environment environment;
-
 
     @EventListener
     public void onApplicationStarted(final ApplicationStartedEvent event) {

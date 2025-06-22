@@ -5,32 +5,37 @@ import com.vaadin.flow.component.textfield.TextField;
 import de.bytestore.plugin.AutowireLoader;
 import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
 import de.bytestore.plugin.service.ConfigService;
-import de.bytestore.plugin.service.PluginService;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ConfigExtension is a concrete implementation of the PluginConfigExtensionPoint,
+ * responsible for managing and interacting with plugin configuration data.
+ * This class provides mechanisms to save plugin settings and render configuration UI components.
+ *
+ * It uses the ConfigService for persisting configuration data and retrieving it as required.
+ * Additionally, this class demonstrates the integration of external beans and components,
+ * with a workaround for using an externally loaded PluginService via {@link AutowireLoader}.
+ */
 @Component
 @Extension
 public class ConfigExtension implements PluginConfigExtensionPoint {
+    @Autowired
+    private ConfigService configService;
 
     // Current Workaround for using external Beans...
     // https://github.com/Gamer08YT/hostinger2024/blob/4062136bc1a8aa33bc80ba7ab9ced46892cb04b2/src/main/java/de/bytestore/hostinger/AutowireLoader.java#L19
     // https://byte-storede.github.io/Hostinger-Docs/autowired.html
-    private final PluginService pluginService = AutowireLoader.getBean(PluginService.class);
 
     // Create Dummy Field.
     private final TextField username = new TextField("Username");
 
     // Create Dummy Checkbox.
     private final Checkbox checkbox = new Checkbox("Enable Debug Mode.");
-    private final ConfigService configService;
-
-    public ConfigExtension(ConfigService configService) {
-        this.configService = configService;
-    }
 
 
     /**

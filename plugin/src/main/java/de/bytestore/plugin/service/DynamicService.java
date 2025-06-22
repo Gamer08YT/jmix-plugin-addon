@@ -1,22 +1,19 @@
 package de.bytestore.plugin.service;
 
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import io.jmix.flowui.view.View;
 import io.jmix.flowui.view.ViewRegistry;
-import io.jmix.flowui.view.navigation.RouteSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.ViewResolver;
 
 /**
  * A service class responsible for dynamically managing views and their configurations.
  * This class utilizes a {@code ViewRegistry} for loading view components and handles
  * session-specific route configurations.
  */
-@Component("plugin_DynamicService")
+@Component
 public class DynamicService {
     private static final Logger log = LoggerFactory.getLogger(DynamicService.class);
 
