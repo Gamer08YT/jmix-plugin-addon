@@ -48,9 +48,8 @@ subprojects {
         withSourcesJar()
     }
 
-    artifacts {
-        archives jar // Registriert die kompilierten Klassen richtig
-        archives sourcesJar // Ergänzend: Registriert die Source-JAR
+    tasks.assemble {
+        dependsOn jar, sourcesJar
     }
 
     publishing {
