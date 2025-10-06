@@ -36,7 +36,24 @@ subprojects {
         archiveBaseName.set(archName)
     }
 
+    // WICHTIG: Groovy 4 durchsetzen und org.codehaus.groovy eliminieren
+    configurations.configureEach {
+        exclude group: "org.codehaus.groovy"
+
+        resolutionStrategy {
+            dependencySubstitution {
+                substitute(module("org.codehaus.groovy:groovy"))      .using(module("org.apache.groovy:groovy:4.0.27"))
+                substitute(module("org.codehaus.groovy:groovy-xml"))  .using(module("org.apache.groovy:groovy-xml:4.0.27"))
+            }
+        }
+    }
+
     dependencies {
+        // Groovy 4 BOM importieren und sicherstellen, dass groovy-xml aus org.apache.groovy kommt
+        implementation platform("org.apache.groovy:groovy-bom:4.0.27")
+        implementation "org.apache.groovy:groovy"
+        implementation "org.apache.groovy:groovy-xml"
+
         api('org.pf4j:pf4j:3.13.0') {
             exclude group: 'org.slf4j', module: 'slf4j-reload4j'
         }
@@ -60,7 +77,7 @@ subprojects {
                 url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
                 credentials {
                     username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                    password = project.findProperty("gpr.key")  ?: System.getenv("GITHUB_TOKEN")
                 }
             }
         }
@@ -80,5 +97,4 @@ subprojects {
     project.tasks.withType(JavaCompile).configureEach {
         options.compilerArgs.add("-parameters")
     }
-
 }
