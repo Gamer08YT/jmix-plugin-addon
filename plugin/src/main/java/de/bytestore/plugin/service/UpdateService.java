@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,7 @@ public class UpdateService {
     private Environment environment;
 
     @EventListener
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public void onApplicationStarted(final ApplicationStartedEvent event) {
         this.reloadRepositories();
     }
