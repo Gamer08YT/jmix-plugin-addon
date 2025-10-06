@@ -1,7 +1,11 @@
 apply plugin: 'groovy'
 apply plugin: 'io.jmix'
 
-archivesBaseName = 'plugin'
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    archiveBaseName.set('plugin')
+}
+
 
 dependencies {
     implementation 'io.jmix.core:jmix-core-starter'
