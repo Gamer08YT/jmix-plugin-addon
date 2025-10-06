@@ -7,29 +7,40 @@ tasks.withType(AbstractArchiveTask).configureEach {
 }
 
 
+// Apply Jmix plugin (Groovy plugin not needed unless you actually use .groovy source files)
+apply plugin: "io.jmix"
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    archiveBaseName.set("plugin")
+}
+
 dependencies {
-    implementation 'io.jmix.core:jmix-core-starter'
-    implementation 'io.jmix.data:jmix-eclipselink-starter'
-    implementation 'io.jmix.flowui:jmix-flowui-starter'
-    implementation 'io.jmix.flowui:jmix-flowui-themes'
+    // --- Jmix starters ---
+    implementation "io.jmix.core:jmix-core-starter"
+    implementation "io.jmix.data:jmix-eclipselink-starter"
+    implementation "io.jmix.flowui:jmix-flowui-starter"
+    implementation "io.jmix.flowui:jmix-flowui-themes"
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    // --- Testing ---
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude group: "org.junit.vintage", module: "junit-vintage-engine"
     }
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testImplementation "org.springframework.boot:spring-boot-starter-web"
+    testRuntimeOnly "org.hsqldb:hsqldb"
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // --- Logging ---
+    implementation "org.slf4j:slf4j-api:2.0.16"
+    implementation "ch.qos.logback:logback-classic:1.4.11"
+    implementation "ch.qos.logback:logback-core:1.4.11"
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    // --- PF4J core + Spring + update support ---
+    implementation "org.pf4j:pf4j:3.13.0"
+    implementation "org.pf4j:pf4j-spring:0.9.0"
+    implementation "org.pf4j:pf4j-update:2.3.0"
 
-    testRuntimeOnly 'org.hsqldb:hsqldb'
-
-    implementation("org.slf4j:slf4j-api:2.0.16")
-    implementation("ch.qos.logback:logback-classic:1.4.11")
-    implementation("ch.qos.logback:logback-core:1.4.11")
-
-    implementation('org.pf4j:pf4j:3.13.0')
-    implementation('org.pf4j:pf4j-spring:0.9.0')
-    implementation 'org.pf4j:pf4j-update:2.3.0'
+    // --- Groovy XML (required for Jmix entity enhancement under Gradle 9+) ---
+    implementation "org.codehaus.groovy:groovy-xml:3.0.21"
 }
 
 configurations.implementation {
