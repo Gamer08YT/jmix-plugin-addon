@@ -11,7 +11,7 @@ jobs:
         with:
           java-version: '17'
       - name: Publish package
-        run: gradle -Pversion=${{ github.event.release.tag_name }} build publish
+        run: gradle -Pversion=${{ github.event.release.tag_name }} build publish --warning-mode all
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_USERNAME: Gamer08YT
