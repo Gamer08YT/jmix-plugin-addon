@@ -1,4 +1,6 @@
-archivesBaseName = 'plugin-starter'
+tasks.withType(AbstractArchiveTask).configureEach {
+    archiveBaseName.set('plugin-starter')
+}
 
 jmix {
     entitiesEnhancing {

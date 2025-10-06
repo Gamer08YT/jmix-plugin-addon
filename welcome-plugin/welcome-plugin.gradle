@@ -1,4 +1,7 @@
-archivesBaseName = 'welcome-plugin'
+tasks.withType(AbstractArchiveTask).configureEach {
+    archiveBaseName.set('welcome-plugin')
+}
+
 
 apply plugin: 'io.jmix'
 apply plugin: 'wrapper'
