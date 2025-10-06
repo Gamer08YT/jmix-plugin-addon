@@ -1,9 +1,7 @@
 package de.bytestore.plugin.service;
 
-import de.bytestore.plugin.AutowireLoader;
 import de.bytestore.plugin.configuration.SpringRuntimePluginManager;
 import de.bytestore.plugin.entity.Plugin;
-import de.bytestore.plugin.entity.PluginData;
 import io.jmix.core.AccessManager;
 import io.jmix.core.DataManager;
 import io.jmix.core.UnconstrainedDataManager;
@@ -16,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The PluginService class is responsible for managing the lifecycle, configuration, and operations
@@ -130,6 +129,7 @@ public class PluginService {
      * @param event the application started event containing context about the application startup
      */
     @EventListener
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public void onApplicationStarted(final ApplicationStartedEvent event) {
         if (this.isAutoload())
             this.load();
