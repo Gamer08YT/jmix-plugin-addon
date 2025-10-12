@@ -13,7 +13,7 @@ import java.nio.file.Path;
  * plugin directories at runtime.
  */
 @Order(Ordered.LOWEST_PRECEDENCE)
-public class SpringRuntimePluginManager extends SpringPluginManager {
+public class SpringRuntimePluginManager extends JmixSpringPluginManager {
 
     /**
      * A static variable representing the current runtime mode of the application or plugin manager.

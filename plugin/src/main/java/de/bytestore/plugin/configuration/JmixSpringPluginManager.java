@@ -27,6 +27,8 @@ import java.util.List;
  * - Lazy initialization of plugins through the `init` method, ensuring compatibility
  *   with the startup order of the Jmix framework.
  *
+ * @implNote Based on {@link org.pf4j.spring.SpringPluginManager} <-- This Class is just a dirty workaround.
+ *
  * Note: This implementation includes a workaround to address a known issue where
  * plugins load faster than the Jmix application initialization. As such, the `init`
  * method is provided but intentionally left with no operation.
