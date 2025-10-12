@@ -28,7 +28,7 @@ public class ConfigExtension implements PluginConfigExtensionPoint {
     // Current Workaround for using external Beans...
     // https://github.com/Gamer08YT/hostinger2024/blob/4062136bc1a8aa33bc80ba7ab9ced46892cb04b2/src/main/java/de/bytestore/hostinger/AutowireLoader.java#L19
     // https://byte-storede.github.io/Hostinger-Docs/autowired.html
-    private static ConfigService configService = AutowireLoader.getBean(ConfigService.class);
+    private static final ConfigService configService = AutowireLoader.getBean(ConfigService.class);
 
     // Create Dummy Field.
     private final TextField username = new TextField("Username");
