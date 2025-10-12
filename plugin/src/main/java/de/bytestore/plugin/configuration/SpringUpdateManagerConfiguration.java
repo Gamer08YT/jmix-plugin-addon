@@ -3,6 +3,8 @@ package de.bytestore.plugin.configuration;
 import org.pf4j.update.UpdateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class SpringUpdateManagerConfiguration {
     private SpringRuntimePluginManager managerIO;
 
     @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public JMIXUpdateManager updateManager() {
         return new JMIXUpdateManager(managerIO, new ArrayList<UpdateRepository>());
     }

@@ -2,6 +2,8 @@ package de.bytestore.plugin.configuration;
 
 import org.pf4j.RuntimeMode;
 import org.pf4j.spring.SpringPluginManager;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import java.nio.file.Path;
 
@@ -10,7 +12,18 @@ import java.nio.file.Path;
  * in a Spring application context. This implementation allows for setting up and configuring
  * plugin directories at runtime.
  */
+@Order(Ordered.LOWEST_PRECEDENCE)
 public class SpringRuntimePluginManager extends SpringPluginManager {
+
+    /**
+     * A static variable representing the current runtime mode of the application or plugin manager.
+     * This variable is used to indicate whether the application is running in deployment mode
+     * or development mode. The runtime mode can influence the behavior of the system, such as
+     * output verbosity, debugging capabilities, or dynamic class reloading.
+     *
+     * The default value is set to {@code RuntimeMode.DEPLOYMENT}, which typically corresponds
+     * to a production environment.
+     */
     public static RuntimeMode runtimeMode = RuntimeMode.DEPLOYMENT;
 
 

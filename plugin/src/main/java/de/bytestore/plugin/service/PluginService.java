@@ -129,10 +129,13 @@ public class PluginService {
      * @param event the application started event containing context about the application startup
      */
     @EventListener
-    @Order(Ordered.LOWEST_PRECEDENCE)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public void onApplicationStarted(final ApplicationStartedEvent event) {
-        if (this.isAutoload())
+        if (this.isAutoload()) {
+            log.info("Loading Plugins on Application Start... ");
+
             this.load();
+        }
     }
 
     /**
@@ -199,6 +202,7 @@ public class PluginService {
 
         // Set Spring Context for Plugin Manager.
         managerIO.setApplicationContext(context);
+
 
         // Load Plugins from Home.
         managerIO.loadPlugins();

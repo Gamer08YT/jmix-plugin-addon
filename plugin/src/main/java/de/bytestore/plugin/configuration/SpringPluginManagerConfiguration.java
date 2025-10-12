@@ -3,6 +3,8 @@ package de.bytestore.plugin.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 
 import java.nio.file.Path;
@@ -26,6 +28,7 @@ public class SpringPluginManagerConfiguration {
     private Environment environment;
 
     @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public SpringRuntimePluginManager pluginManager() {
         return new SpringRuntimePluginManager(Path.of(getHome()));
     }

@@ -16,6 +16,8 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import java.util.List;
 import java.util.Set;
@@ -51,6 +53,7 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
      *                        interacting with the registry
      */
     @Override
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         // Build Reflections scanner to scan the entire classpath
         Reflections reflections = new Reflections(new ConfigurationBuilder()
@@ -90,6 +93,7 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
      *                    internal state or its metadata about existing bean definitions.
      */
     @Override
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public void postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory beanFactory) {
         // Nor implemented.
     }
@@ -115,8 +119,9 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
      * @throws BeansException if an error occurs while accessing the application context.
      */
     @Override
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        
+
     }
 }
