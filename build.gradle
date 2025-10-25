@@ -42,15 +42,15 @@ subprojects {
 
         resolutionStrategy {
             dependencySubstitution {
-                substitute(module("org.codehaus.groovy:groovy")).using(module("org.apache.groovy:groovy:5.0.1"))
-                substitute(module("org.codehaus.groovy:groovy-xml")).using(module("org.apache.groovy:groovy-xml:5.0.1"))
+                substitute(module("org.codehaus.groovy:groovy")).using(module("org.apache.groovy:groovy:5.0.2"))
+                substitute(module("org.codehaus.groovy:groovy-xml")).using(module("org.apache.groovy:groovy-xml:5.0.2"))
             }
         }
     }
 
     dependencies {
         // Groovy 4 BOM importieren und sicherstellen, dass groovy-xml aus org.apache.groovy kommt
-        implementation platform("org.apache.groovy:groovy-bom:5.0.1")
+        implementation platform("org.apache.groovy:groovy-bom:5.0.2")
         implementation "org.apache.groovy:groovy"
         implementation "org.apache.groovy:groovy-xml"
 
