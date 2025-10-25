@@ -3,12 +3,12 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'io.jmix.gradle:jmix-gradle-plugin:2.6.0-RC1'
+        classpath 'io.jmix.gradle:jmix-gradle-plugin:2.7.0-RC2'
     }
 }
 
 group = 'de.bytestore'
-version = '2.6.1'
+version = '2.7.0'
 
 subprojects {
     apply plugin: 'java-library'
@@ -23,7 +23,7 @@ subprojects {
     }
 
     jmix {
-        bomVersion = '2.6.1'
+        bomVersion = '2.7.0-RC2'
         projectId = 'plugin'
     }
 
@@ -42,8 +42,8 @@ subprojects {
 
         resolutionStrategy {
             dependencySubstitution {
-                substitute(module("org.codehaus.groovy:groovy"))      .using(module("org.apache.groovy:groovy:5.0.1"))
-                substitute(module("org.codehaus.groovy:groovy-xml"))  .using(module("org.apache.groovy:groovy-xml:5.0.1"))
+                substitute(module("org.codehaus.groovy:groovy")).using(module("org.apache.groovy:groovy:5.0.1"))
+                substitute(module("org.codehaus.groovy:groovy-xml")).using(module("org.apache.groovy:groovy-xml:5.0.1"))
             }
         }
     }
@@ -77,7 +77,7 @@ subprojects {
                 url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
                 credentials {
                     username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                    password = project.findProperty("gpr.key")  ?: System.getenv("GITHUB_TOKEN")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
                 }
             }
         }
