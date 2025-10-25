@@ -70,24 +70,24 @@ subprojects {
         dependsOn jar, sourcesJar
     }
 
-    publishing {
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
-                credentials {
-                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-                }
-            }
-        }
-        publications {
-            javaMaven(MavenPublication) {
-                artifactId = archName
-                from components.java
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }
+    publications {
+        javaMaven(MavenPublication) {
+            artifactId = archName
+            from components.java
+        }
+    }
+}
 
     // remove after https://youtrack.jetbrains.com/issue/IDEA-227215 is fixed
     tasks.withType(GenerateModuleMetadata) {
