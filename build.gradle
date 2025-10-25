@@ -30,22 +30,17 @@ subprojects {
     group = this.group
     version = this.version
 
-    def archName = project.name
+    def props = new Properties()
+    buildFile.withInputStream { props.load(it) }
+    def subArchivesBaseName = props.getProperty('archivesBaseName')
+    def archName = subArchivesBaseName.substring(1, subArchivesBaseName.length() - 1)
 
-    tasks.withType(AbstractArchiveTask).configureEach {
-        archiveBaseName.set(archName)
+    java {
+        withSourcesJar()
     }
 
-    // WICHTIG: Groovy 4 durchsetzen und org.codehaus.groovy eliminieren
-    configurations.configureEach {
-        exclude group: "org.codehaus.groovy"
-
-        resolutionStrategy {
-            dependencySubstitution {
-                substitute(module("org.codehaus.groovy:groovy")).using(module("org.apache.groovy:groovy:5.0.1"))
-                substitute(module("org.codehaus.groovy:groovy-xml")).using(module("org.apache.groovy:groovy-xml:5.0.1"))
-            }
-        }
+    artifacts {
+        archives sourcesJar
     }
 
     dependencies {
@@ -62,32 +57,28 @@ subprojects {
         }
     }
 
-    java {
-        withSourcesJar()
-    }
-
     tasks.assemble {
         dependsOn jar, sourcesJar
     }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        publications {
+            javaMaven(MavenPublication) {
+                artifactId = archName
+                from components.java
             }
         }
     }
-    publications {
-        javaMaven(MavenPublication) {
-            artifactId = archName
-            from components.java
-        }
-    }
-}
 
     // remove after https://youtrack.jetbrains.com/issue/IDEA-227215 is fixed
     tasks.withType(GenerateModuleMetadata) {
