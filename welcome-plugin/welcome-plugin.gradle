@@ -1,11 +1,4 @@
-tasks.withType(AbstractArchiveTask).configureEach {
-    archiveBaseName.set('welcome-plugin')
-}
-
-
-apply plugin: 'io.jmix'
-apply plugin: 'wrapper'
-apply plugin: 'groovy'
+archivesBaseName = "welcome-plugin"
 
 dependencies {
     compileOnly project(":plugin")
