@@ -19,5 +19,5 @@ jobs:
         run: ./gradlew -Pversion=${{ github.event.release.tag_name }} build publish
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_USERNAME: ${{ github.repository_owner }}
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_USERNAME: Gamer08YT
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
