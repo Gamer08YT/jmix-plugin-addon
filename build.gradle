@@ -54,7 +54,7 @@ subprojects {
         implementation "org.apache.groovy:groovy"
         implementation "org.apache.groovy:groovy-xml"
 
-        api('org.pf4j:pf4j:3.13.0') {
+        api('org.pf4j:pf4j:3.14.1') {
             exclude group: 'org.slf4j', module: 'slf4j-reload4j'
         }
         api('org.pf4j:pf4j-spring:0.10.0') {
