@@ -22,6 +22,7 @@ The following table lists the add-on versions compatible with different Jmix pla
 | 2.6.0-RC1    | 2.6.0          | de.bytestore:plugin-starter:2.6.0  | 
 | 2.6.1        | 2.6.1          | de.bytestore:plugin-starter:2.6.1  | 
 | 2.7.0        | 2.7.0          | de.bytestore:plugin-starter:2.7.0  | 
+| 2.8.0        | 2.8.0          | de.bytestore:plugin-starter:2.8.0  |
 
 1. Add Maven Dependencies to your `build.gradle`:
     ```groovy
