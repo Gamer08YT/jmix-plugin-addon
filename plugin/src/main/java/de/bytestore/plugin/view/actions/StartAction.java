@@ -40,7 +40,7 @@ public class StartAction<E> extends ItemTrackingAction<E> {
     public StartAction(String id) {
         super(id);
         //setText(messageBundle.getMessage("start"));
-        setIcon(VaadinIcon.PLAY.create());
+        setIconComponent(VaadinIcon.PLAY.create());
         setVisibleByUiPermissions(true);
     }
 

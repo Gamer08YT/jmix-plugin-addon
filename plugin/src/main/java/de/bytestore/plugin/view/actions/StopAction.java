@@ -61,7 +61,7 @@ public class StopAction<E> extends ItemTrackingAction<E> {
     public StopAction(String id) {
         super(id);
         //setText(messageBundle.getMessage("stop"));
-        setIcon(VaadinIcon.STOP.create());
+        setIconComponent(VaadinIcon.STOP.create());
     }
 
     @Autowired
