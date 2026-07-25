@@ -1,4 +1,6 @@
-archivesBaseName = "plugin-starter"
+base {
+    archivesName = "plugin-starter"
+}
 
 jmix {
     entitiesEnhancing {

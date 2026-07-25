@@ -1,4 +1,6 @@
-archivesBaseName = "plugin"
+base {
+    archivesName = "plugin"
+}
 
 
 dependencies {

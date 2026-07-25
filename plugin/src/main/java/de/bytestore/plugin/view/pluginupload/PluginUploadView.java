@@ -62,7 +62,7 @@ public class PluginUploadView extends StandardView {
     private String fileName;
 
     @Subscribe("pluginArchive")
-    public void onPluginArchiveFileUploadSucceeded(final FileUploadSucceededEvent<FileUploadField> event) {
+    public void onPluginArchiveFileUploadSucceeded(final FileUploadSucceededEvent<FileUploadField, byte[]> event) {
         // Access the uploaded file information:
         fileName = event.getFileName();
         byte[] fileContent = event.getSource().getValue();
