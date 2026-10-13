@@ -61,7 +61,7 @@ public class StopAction<E> extends ItemTrackingAction<E> {
     public StopAction(String id) {
         super(id);
         //setText(messageBundle.getMessage("stop"));
-        setIconComponent(VaadinIcon.STOP.create());
+        setIcon(VaadinIcon.STOP.create());
     }
 
     @Autowired
@@ -70,7 +70,7 @@ public class StopAction<E> extends ItemTrackingAction<E> {
         this.messageBundle.setMessageGroup("de.bytestore.plugin.view.actions");
 
         setText(messageBundle.getMessage("stop"));
-        setVisibleByUiPermissions(true);
+        //setVisibleByUiPermissions(true);
     }
 
     @Override

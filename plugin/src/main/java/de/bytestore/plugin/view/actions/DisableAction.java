@@ -45,8 +45,8 @@ public class DisableAction<E> extends ItemTrackingAction<E> {
 
     public DisableAction(String id) {
         super(id);
-        setIconComponent(VaadinIcon.LOCK.create());
-        setVisibleByUiPermissions(true);
+        setIcon(VaadinIcon.LOCK.create());
+        //setVisibleByUiPermissions(true);
     }
 
     @Override

@@ -15,7 +15,7 @@
         <action id="closeAction" type="detail_close"/>
     </actions>
     <layout>
-        <tabSheet themeNames="bordered centered" width="100%">
+        <tabSheet id="pluginTabSheet" themeNames="bordered centered" width="100%">
             <tab id="general" label="msg://general">
                 <formLayout id="form" dataContainer="pluginDc">
                     <responsiveSteps>
@@ -42,6 +42,7 @@
             <button id="closeButton" action="closeAction"/>
             <button id="downloadButton" icon="lumo:download" text="msg://download"/>
             <button id="removeButton" icon="vaadin:trash" themeNames="error" text="msg://remove"/>
+            <button id="saveButton" icon="vaadin:check" enabled="false" themeNames="success" text="msg://save"/>
         </hbox>
     </layout>
 </view>

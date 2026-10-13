@@ -19,8 +19,11 @@ import io.jmix.flowui.action.DialogAction;
 import io.jmix.flowui.backgroundtask.BackgroundTask;
 import io.jmix.flowui.backgroundtask.BackgroundWorker;
 import io.jmix.flowui.backgroundtask.TaskLifeCycle;
+import io.jmix.flowui.component.tabsheet.JmixTabSheet;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -28,46 +31,47 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.reflections.Reflections.log;
 
 /**
  * PluginDetailView is responsible for providing the detailed view of a Plugin entity.
  * This view allows users to interact with a plugin entity, including viewing its details,
  * downloading the plugin, and deleting it with confirmation.
- *
+ * <p>
  * It extends the functionality of `StandardDetailView`.
- *
+ * <p>
  * Annotations:
  * - @Route: Defines the URL routing path for this view.
  * - @ViewController: Specifies the view controller's unique ID.
  * - @ViewDescriptor: Defines the descriptor file for the view.
  * - @EditedEntityContainer: Specifies the container ID managing the lifecycle of the edited Plugin entity.
- *
+ * <p>
  * Components and Dependencies:
  * - PluginService: Service responsible for business logic related to plugins.
  * - Dialogs: Service for displaying dialog windows.
  * - MessageBundle: Component for localized messages.
  * - JmixButton: UI component for triggering actions.
- *
+ * <p>
  * Event Handlers:
  * - onBeforeShow: An event triggered before the view is displayed. It configures the visibility
- *   of the download button based on user permissions.
+ * of the download button based on user permissions.
  * - onDownloadButtonClick: Handles the action when the download button is clicked and initiates
- *   the download process for the current plugin.
+ * the download process for the current plugin.
  * - onRemoveButtonClick: Displays a confirmation dialog to the user before deleting the current plugin
- *   and performs the deletion if confirmed.
- *
+ * and performs the deletion if confirmed.
+ * <p>
  * Delegated Installations:
  * - customerDlLoadDelegate: Responsible for customizing the data loading logic for the edited plugin entity.
- *   Allows integration with external storage or data sources to fetch the entity by ID.
+ * Allows integration with external storage or data sources to fetch the entity by ID.
  * - saveDelegate: Provides custom save logic for the edited plugin entity. It handles saving to an external
- *   storage system and ensures the new or updated state is consistent with the framework.
+ * storage system and ensures the new or updated state is consistent with the framework.
  */
 @Route(value = "plugins/:id", layout = DefaultMainViewParent.class)
 @ViewController(id = "plugin_Plugin.detail")
 @ViewDescriptor(path = "plugin-detail-view.xml")
 @EditedEntityContainer("pluginDc")
 public class PluginDetailView extends StandardDetailView<Plugin> {
+    private static final Logger log = LoggerFactory.getLogger(PluginDetailView.class);
+
 
     @Autowired
     private PluginService pluginService;
@@ -101,6 +105,9 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @ViewComponent
     private Paragraph noSettingsNote;
+    @ViewComponent
+    private JmixButton saveButton;
+    private boolean hasSettings;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
@@ -111,14 +118,17 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
         if (!settingsUI.isEmpty()) {
             settingsLayout.add(settingsUI);
-
             noSettingsNote.setVisible(false);
+            hasSettings = true;
+        } else {
+            hasSettings = false;
+            saveButton.setTooltipText(messageBundle.getMessage("noConfigExtension"));
         }
     }
 
     /**
      * Loads a plugin entity based on the given load context.
-     *
+     * <p>
      * This method uses the provided load context's identifier to retrieve a plugin
      * from an external storage and ensures that the loaded entity's state is correctly set to not-new.
      *
@@ -193,6 +203,8 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
      */
     @Subscribe(id = "removeButton", subject = "clickListener")
     public void onRemoveButtonClick(final ClickEvent<JmixButton> event) {
+        View ownerView = this;
+
         dialogs.createOptionDialog().withHeader(messageBundle.getMessage("delete")).withText(messageBundle.formatMessage("deleteWarning", getEditedEntity().getId())).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
 
             // Handle Deletion Process via Background Task.
@@ -214,7 +226,7 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
                         if (this.getOwnerView() != null)
                             // Navigate to Plugin Overview.
-                            viewNavigators.view(this.getOwnerView(), PluginListView.class).navigate();
+                            viewNavigators.view(ownerView, PluginListView.class).navigate();
                     } else
                         notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
@@ -225,7 +237,7 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     /**
      * Retrieves the settings UI components for the plugin.
-     *
+     * <p>
      * This method invokes the rendering process of the plugin configuration,
      * generating a list of UI components that represent the settings interface
      * for the current plugin.
@@ -240,12 +252,13 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     /**
      * Retrieves the plugin configuration extension instance for the currently edited entity.
-     *
+     * <p>
      * This method fetches an instance of the {@link PluginConfigExtensionPoint} associated with
      * the plugin identified by the ID of the currently edited entity and retrieves the first
      * extension available for the given plugin.
      *
-     * @return an instance of {@link PluginConfigExtensionPoint*/
+     * @return an instance of {@link PluginConfigExtensionPoint
+     */
     private PluginConfigExtensionPoint getPluginConfig() {
         List<Object> objectsIO = pluginService.getExtension(PluginConfigExtensionPoint.class, getEditedEntity().getId());
 
@@ -254,5 +267,17 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
         else
             return (PluginConfigExtensionPoint) objectsIO.get(0);
     }
+
+    @Subscribe("pluginTabSheet")
+    public void onPluginTabSheetSelectedChange(final JmixTabSheet.SelectedChangeEvent event) {
+        if (hasSettings)
+            saveButton.setEnabled(event.getSelectedTab().getId().equals("settings"));
+    }
+
+    @Subscribe(id = "saveButton", subject = "clickListener")
+    public void onSaveButtonClick(final ClickEvent<JmixButton> event) {
+        ((PluginConfigExtensionPoint) pluginService.getExtension(PluginConfigExtensionPoint.class, getEditedEntity().getId()).get(0)).save();
+    }
+
 
 }

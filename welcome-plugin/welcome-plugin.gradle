@@ -1,4 +1,6 @@
-archivesBaseName = "welcome-plugin"
+base {
+    archivesName = "welcome-plugin"
+}
 
 dependencies {
     compileOnly project(":plugin")
