@@ -1,5 +1,6 @@
 package de.bytestore.plugin.view.plugin;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Paragraph;
@@ -107,12 +108,14 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     private Paragraph noSettingsNote;
     @ViewComponent
     private JmixButton saveButton;
-    private boolean hasSettings;
+
+    private boolean hasSettings = false;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
         downloadButton.setVisible(pluginService.isPermitted("downloadPlugin"));
         removeButton.setVisible(pluginService.isPermitted("deletePlugin"));
+        saveButton.setVisible(pluginService.isPermitted("savePluginConfig"));
 
         List<Component> settingsUI = getSettingsUI();
 
@@ -268,10 +271,14 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
             return (PluginConfigExtensionPoint) objectsIO.get(0);
     }
 
+
     @Subscribe("pluginTabSheet")
     public void onPluginTabSheetSelectedChange(final JmixTabSheet.SelectedChangeEvent event) {
-        if (hasSettings)
+        if (hasSettings) {
+            log.debug("Plugin tab sheet selected change event fired. Selected tab ID: {}", event.getSelectedTab().getId());
+
             saveButton.setEnabled(event.getSelectedTab().getId().equals("settings"));
+        }
     }
 
     @Subscribe(id = "saveButton", subject = "clickListener")
