@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.UnorderedList;
 import com.vaadin.flow.component.notification.Notification;
@@ -81,6 +82,7 @@ import java.util.concurrent.TimeUnit;
 @EditedEntityContainer("pluginDc")
 public class PluginDetailView extends StandardDetailView<Plugin> {
     private static final Logger log = LoggerFactory.getLogger(PluginDetailView.class);
+    private static final int MAX_ABOUT_HTML_BYTES = 1024 * 1024;
 
 
     @Autowired
@@ -286,14 +288,45 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     private List<Component> getAboutUI() {
         List<Object> extensions = pluginService.getExtension(PluginAboutExtensionPoint.class, getEditedEntity().getId());
-        if (extensions.isEmpty()) {
+        if (!extensions.isEmpty()) {
+            try {
+                List<Component> components = ((PluginAboutExtensionPoint) extensions.get(0)).render();
+                if (components != null && !components.isEmpty()) {
+                    return components;
+                }
+            } catch (RuntimeException e) {
+                log.warn("Could not render About tab of plugin {}", getEditedEntity().getId(), e);
+            }
+        }
+
+        return getAboutHtml();
+    }
+
+    /** Loads optional plugin-about.html from the root of the plugin JAR as an alternative to the UI extension. */
+    private List<Component> getAboutHtml() {
+        var wrapper = pluginService.getPlugin(getEditedEntity().getId());
+        if (wrapper == null) {
             return List.of();
         }
-        try {
-            List<Component> components = ((PluginAboutExtensionPoint) extensions.get(0)).render();
-            return components == null ? List.of() : components;
-        } catch (RuntimeException e) {
-            log.warn("Could not render About tab of plugin {}", getEditedEntity().getId(), e);
+
+        try (InputStream input = wrapper.getPluginClassLoader().getResourceAsStream("plugin-about.html")) {
+            if (input == null) {
+                return List.of();
+            }
+            byte[] content = input.readNBytes(MAX_ABOUT_HTML_BYTES + 1);
+            if (content.length > MAX_ABOUT_HTML_BYTES) {
+                log.warn("About HTML of plugin {} exceeds the {} byte limit", getEditedEntity().getId(), MAX_ABOUT_HTML_BYTES);
+                noAboutNote.setText(messageBundle.getMessage("aboutHtmlTooLarge"));
+                return List.of();
+            }
+            String html = new String(content, java.nio.charset.StandardCharsets.UTF_8);
+            if (html.isBlank()) {
+                return List.of();
+            }
+            return List.of(new Html(html));
+        } catch (Exception e) {
+            log.warn("Could not read About HTML of plugin {}", getEditedEntity().getId(), e);
+            noAboutNote.setText(messageBundle.getMessage("aboutHtmlInvalid"));
             return List.of();
         }
     }

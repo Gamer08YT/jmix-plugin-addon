@@ -92,7 +92,18 @@ public class AboutExtension implements PluginAboutExtensionPoint {
 }
 ```
 
-The About tab is available for every plugin. If no extension is registered, the add-on displays an explanatory note.
+Alternatively, add a `plugin-about.html` resource to the root of the plugin JAR:
+
+```html
+<article>
+  <h2>My Plugin</h2>
+  <p>Information about this plugin.</p>
+</article>
+```
+
+The UI extension takes precedence when it returns components; otherwise the add-on falls back to `plugin-about.html`.
+The HTML resource is limited to 1 MB. The About tab is available for every plugin, and an explanatory note is shown
+when neither source provides content.
 
 ### Installation Terms
 
