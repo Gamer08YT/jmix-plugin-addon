@@ -3,6 +3,9 @@ package de.bytestore.plugin.view.plugin;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.Html;
@@ -17,6 +20,7 @@ import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.extension.PluginAboutExtensionPoint;
 import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
 import de.bytestore.plugin.service.PluginService;
+import de.bytestore.plugin.service.InstallationTermsContent;
 import io.jmix.core.DataManager;
 import io.jmix.core.EntityStates;
 import io.jmix.core.LoadContext;
@@ -99,6 +103,9 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @ViewComponent
     private JmixButton removeButton;
+
+    @ViewComponent
+    private JmixButton termsButton;
 
     @Autowired
     private Notifications notifications;
@@ -260,15 +267,51 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
                     if (result) {
                         notifications.create(messageBundle.formatMessage("pluginDeleted", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
 
-                        if (this.getOwnerView() != null)
-                            // Navigate to Plugin Overview.
-                            viewNavigators.view(ownerView, PluginListView.class).navigate();
+                        // Navigate back to the plugin overview after the deletion task completes.
+                        viewNavigators.view(ownerView, PluginListView.class).navigate();
                     } else
                         notifications.create(messageBundle.formatMessage("pluginDeleteFailed", getEditedEntity().getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 
                 }
             }).execute();
         }), new DialogAction(DialogAction.Type.CANCEL)).open();
+    }
+
+    @Subscribe(id = "termsButton", subject = "clickListener")
+    public void onTermsButtonClick(final ClickEvent<JmixButton> event) {
+        try {
+            Optional<InstallationTermsContent> terms =
+                    pluginService.getInstalledInstallationTerms(getEditedEntity().getId());
+            if (terms.isEmpty()) {
+                dialogs.createMessageDialog()
+                        .withHeader(messageBundle.getMessage("installationTermsTitle"))
+                        .withText(messageBundle.getMessage("installationTermsUnavailable"))
+                        .open();
+                return;
+            }
+
+            InstallationTermsContent content = terms.get();
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle(content.title());
+            dialog.setWidth("min(720px, 90vw)");
+            dialog.setMaxHeight("85vh");
+
+            Div scrollableTerms = new Div();
+            content.components().forEach(scrollableTerms::add);
+            scrollableTerms.getStyle().set("max-height", "70vh");
+            scrollableTerms.getStyle().set("overflow", "auto");
+            scrollableTerms.getStyle().set("padding", "var(--lumo-space-m)");
+
+            dialog.add(scrollableTerms);
+            dialog.getFooter().add(new Button(messageBundle.getMessage("installationTermsClose"), click -> dialog.close()));
+            dialog.open();
+        } catch (RuntimeException e) {
+            log.warn("Could not open installation terms for plugin {}", getEditedEntity().getId(), e);
+            dialogs.createMessageDialog()
+                    .withHeader(messageBundle.getMessage("installationTermsTitle"))
+                    .withText(messageBundle.getMessage("installationTermsReadFailed"))
+                    .open();
+        }
     }
 
     /**

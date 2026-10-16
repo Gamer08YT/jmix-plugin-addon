@@ -51,6 +51,7 @@
         <hbox id="detailActions">
             <button id="closeButton" action="closeAction"/>
             <button id="downloadButton" icon="lumo:download" text="msg://download"/>
+            <button id="termsButton" icon="lumo:info-circle" text="msg://installationTerms"/>
             <button id="removeButton" icon="vaadin:trash" themeNames="error" text="msg://remove"/>
             <button id="saveButton" icon="vaadin:check" enabled="false" themeNames="success" text="msg://save"/>
         </hbox>

@@ -22,6 +22,7 @@ import io.jmix.flowui.backgroundtask.BackgroundTask;
 import io.jmix.flowui.backgroundtask.BackgroundWorker;
 import io.jmix.flowui.backgroundtask.TaskLifeCycle;
 import io.jmix.flowui.component.grid.DataGrid;
+import io.jmix.flowui.model.CollectionLoader;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.*;
 import org.pf4j.update.PluginInfo;
@@ -71,6 +72,9 @@ public class PluginListView extends StandardListView<Plugin> {
 
     @ViewComponent
     private DataGrid<Plugin> pluginsDataGrid;
+
+    @ViewComponent
+    private CollectionLoader<Plugin> pluginsDl;
 
     @Autowired
     private Messages messages;
@@ -327,7 +331,7 @@ public class PluginListView extends StandardListView<Plugin> {
                     }
 
                     getUI().ifPresent(ui -> ui.access(() -> {
-                        pluginsDataGrid.getDataProvider().refreshAll();
+                        pluginsDl.load();
                     }));
                 }
             }).execute();
@@ -346,7 +350,7 @@ public class PluginListView extends StandardListView<Plugin> {
     @Subscribe(id = "uploadButton", subject = "clickListener")
     public void onUploadButtonClick(final ClickEvent<JmixButton> event) {
         dialogWindows.view(this, PluginUploadView.class).withAfterCloseListener(pluginUploadViewAfterCloseEvent -> {
-            pluginsDataGrid.getDataProvider().refreshAll();
+            pluginsDl.load();
         }).open();
     }
 

@@ -670,6 +670,48 @@ public class PluginService {
         }
     }
 
+    /** Reads the terms of an installed plugin so they can be reopened from its detail view at any time. */
+    public Optional<InstallationTermsContent> getInstalledInstallationTerms(String pluginId) {
+        PluginWrapper wrapper = managerIO.getPlugin(pluginId);
+        if (wrapper == null) {
+            return Optional.empty();
+        }
+
+        for (String className : managerIO.getExtensionClassNames(pluginId)) {
+            try {
+                Class<?> type = wrapper.getPluginClassLoader().loadClass(className);
+                if (!PluginInstallationTermsExtensionPoint.class.isAssignableFrom(type)) {
+                    continue;
+                }
+                PluginInstallationTermsExtensionPoint extension =
+                        (PluginInstallationTermsExtensionPoint) type.getDeclaredConstructor().newInstance();
+                List<com.vaadin.flow.component.Component> components = extension.render();
+                if (components == null || components.isEmpty()) {
+                    continue;
+                }
+                String title = extension.title();
+                return Optional.of(new InstallationTermsContent(
+                        title == null || title.isBlank() ? "Terms and conditions" : title, components));
+            } catch (ReflectiveOperationException | LinkageError e) {
+                throw new IllegalStateException("Could not render installation terms extension " + className, e);
+            }
+        }
+
+        try (InputStream input = wrapper.getPluginClassLoader().getResourceAsStream("plugin-terms.html")) {
+            if (input == null) {
+                return Optional.empty();
+            }
+            byte[] content = input.readNBytes(512 * 1024 + 1);
+            if (content.length > 512 * 1024) {
+                throw new IllegalArgumentException("plugin-terms.html must not exceed 512 KB");
+            }
+            return Optional.of(new InstallationTermsContent("Terms and conditions", List.of(
+                    new com.vaadin.flow.component.Html(new String(content, java.nio.charset.StandardCharsets.UTF_8)))));
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not read installation terms for plugin " + pluginId, e);
+        }
+    }
+
     /** Stores consent against the complete archive digest, so every changed JAR requires fresh consent. */
     public void acceptInstallationTerms(PluginArtifactIdentity identity) {
         configService.setValue(acceptanceKey(identity.pluginId()), identity.sha256());
