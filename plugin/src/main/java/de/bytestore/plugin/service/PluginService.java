@@ -2,6 +2,7 @@ package de.bytestore.plugin.service;
 
 import de.bytestore.plugin.configuration.SpringRuntimePluginManager;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.extension.PluginInstallationTermsExtensionPoint;
 import io.jmix.core.AccessManager;
 import io.jmix.core.DataManager;
 import io.jmix.core.UnconstrainedDataManager;
@@ -27,6 +28,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * The PluginService class is responsible for managing the lifecycle, configuration, and operations
@@ -575,6 +579,57 @@ public class PluginService {
             Files.move(oldIO.toPath(), new File(getHome() + fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Reads optional installation terms from the root of a staged plugin JAR. The content is shown
+     * before the archive is moved to the installed plugin directory.
+     */
+    public Optional<String> readInstallationTerms(String fileName) {
+        File archive = new File(getTemp() + fileName);
+        try (JarFile jar = new JarFile(archive)) {
+            JarEntry entry = jar.getJarEntry("plugin-terms.html");
+            if (entry == null) {
+                return Optional.empty();
+            }
+            if (entry.getSize() > 512 * 1024) {
+                throw new IllegalArgumentException("plugin-terms.html must not exceed 512 KB");
+            }
+            try (InputStream input = jar.getInputStream(entry)) {
+                byte[] content = input.readNBytes(512 * 1024 + 1);
+                if (content.length > 512 * 1024) {
+                    throw new IllegalArgumentException("plugin-terms.html must not exceed 512 KB");
+                }
+                return Optional.of(new String(content, java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read plugin-terms.html from " + fileName, e);
+        }
+    }
+
+    /**
+     * Renders an optional plugin-defined terms dialog body while the staged plugin is temporarily loaded.
+     * The plugin is unloaded before returning; only the returned Jmix/Vaadin components remain in the view.
+     */
+    public Optional<InstallationTermsContent> renderInstallationTerms(String fileName) {
+        String pluginId = managerIO.loadPlugin(Paths.get(getTemp() + fileName));
+        try {
+            List<PluginInstallationTermsExtensionPoint> extensions =
+                    managerIO.getExtensions(PluginInstallationTermsExtensionPoint.class, pluginId);
+            if (extensions.isEmpty()) {
+                return Optional.empty();
+            }
+            PluginInstallationTermsExtensionPoint extension = extensions.get(0);
+            List<com.vaadin.flow.component.Component> components = extension.render();
+            if (components == null || components.isEmpty()) {
+                return Optional.empty();
+            }
+            String title = extension.title();
+            return Optional.of(new InstallationTermsContent(
+                    title == null || title.isBlank() ? "Terms and conditions" : title, components));
+        } finally {
+            managerIO.unloadPlugin(pluginId);
         }
     }
 

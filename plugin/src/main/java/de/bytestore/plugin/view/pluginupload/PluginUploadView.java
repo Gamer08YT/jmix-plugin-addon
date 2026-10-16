@@ -2,11 +2,17 @@ package de.bytestore.plugin.view.pluginupload;
 
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.service.PluginService;
+import de.bytestore.plugin.service.InstallationTermsContent;
 import io.jmix.core.Messages;
 import io.jmix.flowui.Dialogs;
 import io.jmix.flowui.UiComponents;
@@ -18,6 +24,8 @@ import io.jmix.flowui.view.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
 
 /**
  * PluginUploadView is a user interface class responsible for managing the plugin upload process.
@@ -76,13 +84,15 @@ public class PluginUploadView extends StandardView {
         try {
             // Load Uploaded Plugin.
             pluginService.checkPlugin(fileName);
-
-            // If no exception occurs, move to home directory.
-            pluginService.moveOutOfTemp(fileName);
-
-            log.info("Successfully Uploaded Plugin Archive: {}", fileName);
-
-            pluginSubmit.setEnabled(true);
+            Optional<InstallationTermsContent> customTerms = pluginService.renderInstallationTerms(fileName);
+            Optional<String> termsFile = pluginService.readInstallationTerms(fileName);
+            if (customTerms.isPresent()) {
+                showTermsDialog(customTerms.get());
+            } else if (termsFile.isPresent() && !termsFile.get().isBlank()) {
+                showTermsDialog(termsFile.get());
+            } else {
+                finishValidatedUpload();
+            }
         } catch (Exception e) {
             log.error("Unable to Upload Plugin Archive: {}. {}", fileName, e.getMessage());
 
@@ -113,6 +123,50 @@ public class PluginUploadView extends StandardView {
         pluginService.loadMovedPlugin(fileName);
 
         this.close(StandardOutcome.SAVE);
+    }
+
+    private void showTermsDialog(String termsHtml) {
+        showTermsDialog(new InstallationTermsContent(messageBundle.getMessage("installationTermsTitle"),
+                java.util.List.of(new Html(termsHtml))));
+    }
+
+    private void showTermsDialog(InstallationTermsContent terms) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle(terms.title());
+        dialog.setWidth("min(720px, 90vw)");
+        dialog.setMaxHeight("85vh");
+        dialog.setCloseOnEsc(false);
+        dialog.setCloseOnOutsideClick(false);
+
+        Div scrollableTerms = new Div();
+        terms.components().forEach(scrollableTerms::add);
+        scrollableTerms.getStyle().set("max-height", "60vh");
+        scrollableTerms.getStyle().set("overflow", "auto");
+        scrollableTerms.getStyle().set("padding", "var(--lumo-space-m)");
+
+        Checkbox acceptance = new Checkbox(messageBundle.getMessage("acceptInstallationTerms"));
+        Button cancel = new Button(messageBundle.getMessage("cancelInstallation"), click -> {
+            dialog.close();
+            pluginService.removeTemp(fileName);
+            pluginSubmit.setEnabled(false);
+            fileName = null;
+        });
+        Button accept = new Button(messageBundle.getMessage("acceptAndContinue"), click -> {
+            dialog.close();
+            finishValidatedUpload();
+        });
+        accept.setEnabled(false);
+        acceptance.addValueChangeListener(event -> accept.setEnabled(event.getValue()));
+
+        dialog.add(scrollableTerms, acceptance);
+        dialog.getFooter().add(cancel, accept);
+        dialog.open();
+    }
+
+    private void finishValidatedUpload() {
+        pluginService.moveOutOfTemp(fileName);
+        log.info("Successfully Uploaded Plugin Archive: {}", fileName);
+        pluginSubmit.setEnabled(true);
     }
 
 

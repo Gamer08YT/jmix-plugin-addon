@@ -9,6 +9,7 @@ dependencies {
     implementation "io.jmix.data:jmix-eclipselink-starter"
     implementation "io.jmix.flowui:jmix-flowui-starter"
     implementation "io.jmix.flowui:jmix-flowui-themes"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
 
     // --- Testing ---
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

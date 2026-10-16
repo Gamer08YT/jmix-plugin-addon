@@ -58,6 +58,66 @@ The Add-on comes with 4 included Views.
   Archive)
 - Local Plugin Repositories
 - Remote Plugin Repositories
+- Per-plugin changelog and About tabs on the plugin detail view
+
+### Plugin Changelog
+
+Add `plugin-changelog.json` to the root of the plugin JAR resources. It must contain a JSON array, newest entry first:
+
+```json
+[
+  {
+    "version": "1.2.0",
+    "date": "2026-10-16",
+    "changes": ["Added feature X", "Fixed issue Y"]
+  }
+]
+```
+
+The detail view reads the file directly from the plugin JAR and displays each version, date, and change. The file is
+optional; the tab is still shown when a plugin has no changelog.
+
+### Plugin About Tab
+
+Implement `PluginAboutExtensionPoint` in a plugin to provide the contents of its About tab. Return Jmix Flow UI
+components (Jmix UI components are Vaadin components) from `render()`:
+
+```java
+@Extension
+public class AboutExtension implements PluginAboutExtensionPoint {
+    @Override
+    public List<Component> render() {
+        return List.of(new H3("My Plugin"), new Paragraph("Plugin information"));
+    }
+}
+```
+
+The About tab is available for every plugin. If no extension is registered, the add-on displays an explanatory note.
+
+### Installation Terms
+
+A plugin can request acceptance of its terms before installation by adding `plugin-terms.html` to the root of its JAR.
+After archive validation, the add-on opens a scrollable dialog with that HTML and requires the user to check the
+acceptance box before the JAR is moved into the installed plugin directory. Canceling removes the staged archive.
+The terms file is optional; plugins without it install through the existing flow. For custom dialog content, implement
+`PluginInstallationTermsExtensionPoint` and return Jmix Flow UI components. The extension can also override `title()`.
+When this extension is present, it takes precedence over `plugin-terms.html`; the add-on still provides the required
+acceptance checkbox and the cancel/continue buttons.
+
+```java
+@Extension
+public class InstallationTerms implements PluginInstallationTermsExtensionPoint {
+    @Override
+    public String title() {
+        return "License terms";
+    }
+
+    @Override
+    public List<Component> render() {
+        return List.of(new H3("Before you install"), new Paragraph("Your plugin-specific terms go here."));
+    }
+}
+```
 
 ### Create Plugin Repository
 

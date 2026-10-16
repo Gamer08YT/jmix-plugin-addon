@@ -32,6 +32,16 @@
                     <select readOnly="true" id="stateField" property="state"/>
                 </formLayout>
             </tab>
+            <tab id="changelogs" label="msg://changelogs">
+                <vbox id="changelogsLayout">
+                    <p id="noChangelogsNote" text="msg://noChangelogsNote"/>
+                </vbox>
+            </tab>
+            <tab id="about" label="msg://about">
+                <vbox id="aboutLayout">
+                    <p id="noAboutNote" text="msg://noAboutNote"/>
+                </vbox>
+            </tab>
             <tab id="settings" label="msg://settings">
                 <vbox id="settingsLayout">
                     <p id="noSettingsNote" text="msg://noSettingsNote"/>

@@ -3,12 +3,12 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'io.jmix.gradle:jmix-gradle-plugin:3.1.0-RC1'
+        classpath 'io.jmix.gradle:jmix-gradle-plugin:3.0.3'
     }
 }
 
 group = 'de.bytestore'
-version = '3.1.0'
+version = '3.0.5-internal'
 
 subprojects {
     apply plugin: 'java-library'
@@ -23,7 +23,7 @@ subprojects {
     }
 
     jmix {
-        bomVersion = '3.1.0-RC1'
+        bomVersion = '3.0.3'
         projectId = 'plugin'
     }
 

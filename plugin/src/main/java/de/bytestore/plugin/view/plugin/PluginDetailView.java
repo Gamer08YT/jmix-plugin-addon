@@ -4,12 +4,19 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.ListItem;
+import com.vaadin.flow.component.html.UnorderedList;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bytestore.plugin.entity.Plugin;
+import de.bytestore.plugin.extension.PluginAboutExtensionPoint;
 import de.bytestore.plugin.extension.PluginConfigExtensionPoint;
 import de.bytestore.plugin.service.PluginService;
+import io.jmix.core.DataManager;
 import io.jmix.core.EntityStates;
 import io.jmix.core.LoadContext;
 import io.jmix.core.SaveContext;
@@ -29,7 +36,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 
@@ -105,11 +114,25 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     private VerticalLayout settingsLayout;
 
     @ViewComponent
+    private VerticalLayout changelogsLayout;
+
+    @ViewComponent
+    private VerticalLayout aboutLayout;
+
+    @ViewComponent
     private Paragraph noSettingsNote;
+
+    @ViewComponent
+    private Paragraph noChangelogsNote;
+
+    @ViewComponent
+    private Paragraph noAboutNote;
     @ViewComponent
     private JmixButton saveButton;
 
     private boolean hasSettings = false;
+    @Autowired
+    private DataManager dataManager;
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
@@ -127,6 +150,14 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
             hasSettings = false;
             saveButton.setTooltipText(messageBundle.getMessage("noConfigExtension"));
         }
+
+        List<Component> aboutUI = getAboutUI();
+        if (!aboutUI.isEmpty()) {
+            aboutLayout.add(aboutUI);
+            noAboutNote.setVisible(false);
+        }
+
+        renderChangelogs();
     }
 
     /**
@@ -253,6 +284,69 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
         return new ArrayList<>();
     }
 
+    private List<Component> getAboutUI() {
+        List<Object> extensions = pluginService.getExtension(PluginAboutExtensionPoint.class, getEditedEntity().getId());
+        if (extensions.isEmpty()) {
+            return List.of();
+        }
+        try {
+            List<Component> components = ((PluginAboutExtensionPoint) extensions.get(0)).render();
+            return components == null ? List.of() : components;
+        } catch (RuntimeException e) {
+            log.warn("Could not render About tab of plugin {}", getEditedEntity().getId(), e);
+            return List.of();
+        }
+    }
+
+    /** Reads the optional plugin-changelog.json array from the plugin JAR and renders it as safe text components. */
+    private void renderChangelogs() {
+        var wrapper = pluginService.getPlugin(getEditedEntity().getId());
+        if (wrapper == null) {
+            noChangelogsNote.setVisible(true);
+            return;
+        }
+
+        try (InputStream input = wrapper.getPluginClassLoader().getResourceAsStream("plugin-changelog.json")) {
+            if (input == null) {
+                noChangelogsNote.setVisible(true);
+                return;
+            }
+            JsonNode entries = new ObjectMapper().readTree(input);
+            if (entries == null || !entries.isArray() || entries.isEmpty()) {
+                noChangelogsNote.setVisible(true);
+                return;
+            }
+
+            for (JsonNode entry : entries) {
+                String version = text(entry, "version", "");
+                String date = text(entry, "date", "");
+                String heading = version.isBlank() ? date : version + (date.isBlank() ? "" : " · " + date);
+                if (!heading.isBlank()) {
+                    changelogsLayout.add(new H4(heading));
+                }
+                JsonNode changes = entry.path("changes");
+                if (changes.isArray() && !changes.isEmpty()) {
+                    UnorderedList list = new UnorderedList();
+                    changes.forEach(change -> {
+                        String content = change.isTextual() ? change.asText() : change.toString();
+                        list.add(new ListItem(content));
+                    });
+                    changelogsLayout.add(list);
+                }
+            }
+            noChangelogsNote.setVisible(false);
+        } catch (Exception e) {
+            log.warn("Could not read changelog of plugin {}", getEditedEntity().getId(), e);
+            noChangelogsNote.setText(messageBundle.getMessage("changelogsInvalid"));
+            noChangelogsNote.setVisible(true);
+        }
+    }
+
+    private static String text(JsonNode node, String field, String fallback) {
+        JsonNode value = node.path(field);
+        return value.isTextual() ? value.asText() : fallback;
+    }
+
     /**
      * Retrieves the plugin configuration extension instance for the currently edited entity.
      * <p>
@@ -274,16 +368,21 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @Subscribe("pluginTabSheet")
     public void onPluginTabSheetSelectedChange(final JmixTabSheet.SelectedChangeEvent event) {
-        if (hasSettings) {
-            log.debug("Plugin tab sheet selected change event fired. Selected tab ID: {}", event.getSelectedTab().getId());
+        log.info("Plugin tab sheet selected change event fired. Selected tab ID: {}", event.getSelectedTab().getId());
 
-            saveButton.setEnabled(event.getSelectedTab().getId().equals("settings"));
+        if (hasSettings) {
+            Optional<String> selectedTab = event.getSelectedTab().getId();
+
+            if (selectedTab.isPresent())
+                saveButton.setEnabled(selectedTab.get().equals("settings"));
         }
     }
 
     @Subscribe(id = "saveButton", subject = "clickListener")
     public void onSaveButtonClick(final ClickEvent<JmixButton> event) {
         ((PluginConfigExtensionPoint) pluginService.getExtension(PluginConfigExtensionPoint.class, getEditedEntity().getId()).get(0)).save();
+
+        notifications.create(messageBundle.formatMessage("pluginConfigSaved", getEditedEntity().getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
     }
 
 
