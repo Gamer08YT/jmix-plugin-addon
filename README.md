@@ -105,6 +105,26 @@ The UI extension takes precedence when it returns components; otherwise the add-
 The HTML resource is limited to 1 MB. The About tab is available for every plugin, and an explanatory note is shown
 when neither source provides content.
 
+### Plugin Licenses
+
+Plugins can list third-party software and its licenses in an optional `plugin-licenses.json` array at the root of
+the JAR. Each entry supports `name`, `version`, `license`, `copyright`, and `url`:
+
+```json
+[
+  {
+    "name": "Example Library",
+    "version": "2.4.1",
+    "license": "Apache-2.0",
+    "copyright": "Copyright Example Authors",
+    "url": "https://example.org/example-library"
+  }
+]
+```
+
+The plugin detail view displays these entries in its Licenses tab. Only HTTP and HTTPS URLs are shown as links;
+the metadata file is limited to 1 MB.
+
 ### Installation Terms
 
 A plugin can request acceptance of its terms before installation by adding `plugin-terms.html` to the root of its JAR.

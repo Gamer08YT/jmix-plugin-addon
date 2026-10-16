@@ -8,6 +8,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.UnorderedList;
@@ -87,6 +88,7 @@ import java.util.concurrent.TimeUnit;
 public class PluginDetailView extends StandardDetailView<Plugin> {
     private static final Logger log = LoggerFactory.getLogger(PluginDetailView.class);
     private static final int MAX_ABOUT_HTML_BYTES = 1024 * 1024;
+    private static final int MAX_PLUGIN_LICENSES_BYTES = 1024 * 1024;
 
 
     @Autowired
@@ -126,6 +128,9 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
     private VerticalLayout changelogsLayout;
 
     @ViewComponent
+    private VerticalLayout licensesLayout;
+
+    @ViewComponent
     private VerticalLayout aboutLayout;
 
     @ViewComponent
@@ -133,6 +138,9 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
 
     @ViewComponent
     private Paragraph noChangelogsNote;
+
+    @ViewComponent
+    private Paragraph noLicensesNote;
 
     @ViewComponent
     private Paragraph noAboutNote;
@@ -167,6 +175,7 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
         }
 
         renderChangelogs();
+        renderLicenses();
     }
 
     /**
@@ -415,6 +424,71 @@ public class PluginDetailView extends StandardDetailView<Plugin> {
             log.warn("Could not read changelog of plugin {}", getEditedEntity().getId(), e);
             noChangelogsNote.setText(messageBundle.getMessage("changelogsInvalid"));
             noChangelogsNote.setVisible(true);
+        }
+    }
+
+    /** Reads optional plugin-licenses.json and renders dependency/license metadata as plain text. */
+    private void renderLicenses() {
+        var wrapper = pluginService.getPlugin(getEditedEntity().getId());
+        if (wrapper == null) {
+            noLicensesNote.setVisible(true);
+            return;
+        }
+
+        try (InputStream input = wrapper.getPluginClassLoader().getResourceAsStream("plugin-licenses.json")) {
+            if (input == null) {
+                noLicensesNote.setVisible(true);
+                return;
+            }
+            byte[] content = input.readNBytes(MAX_PLUGIN_LICENSES_BYTES + 1);
+            if (content.length > MAX_PLUGIN_LICENSES_BYTES) {
+                throw new IllegalArgumentException("plugin-licenses.json exceeds 1 MB");
+            }
+            JsonNode entries = new ObjectMapper().readTree(content);
+            if (entries == null || !entries.isArray() || entries.isEmpty()) {
+                noLicensesNote.setVisible(true);
+                return;
+            }
+
+            for (JsonNode entry : entries) {
+                String name = text(entry, "name", "");
+                String version = text(entry, "version", "");
+                String license = text(entry, "license", "");
+                String copyright = text(entry, "copyright", "");
+                String url = text(entry, "url", "");
+                if (!name.isBlank()) {
+                    licensesLayout.add(new H4(name + (version.isBlank() ? "" : " " + version)));
+                }
+                if (!license.isBlank()) {
+                    licensesLayout.add(new Paragraph(messageBundle.formatMessage("licenseName", license)));
+                }
+                if (!copyright.isBlank()) {
+                    licensesLayout.add(new Paragraph(copyright));
+                }
+                if (isHttpUrl(url)) {
+                    Anchor link = new Anchor(url, url);
+                    link.setTarget("_blank");
+                    link.getElement().setAttribute("rel", "noopener noreferrer");
+                    licensesLayout.add(link);
+                }
+            }
+            noLicensesNote.setVisible(false);
+        } catch (Exception e) {
+            log.warn("Could not read licenses of plugin {}", getEditedEntity().getId(), e);
+            noLicensesNote.setText(messageBundle.getMessage("licensesInvalid"));
+            noLicensesNote.setVisible(true);
+        }
+    }
+
+    private static boolean isHttpUrl(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        try {
+            String scheme = java.net.URI.create(value).getScheme();
+            return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 

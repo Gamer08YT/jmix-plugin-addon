@@ -37,6 +37,11 @@
                     <p id="noChangelogsNote" text="msg://noChangelogsNote"/>
                 </vbox>
             </tab>
+            <tab id="licenses" label="msg://licenses">
+                <vbox id="licensesLayout">
+                    <p id="noLicensesNote" text="msg://noLicensesNote"/>
+                </vbox>
+            </tab>
             <tab id="about" label="msg://about">
                 <vbox id="aboutLayout">
                     <p id="noAboutNote" text="msg://noAboutNote"/>
