@@ -104,6 +104,9 @@ The terms file is optional; plugins without it install through the existing flow
 When this extension is present, it takes precedence over `plugin-terms.html`; the add-on still provides the required
 acceptance checkbox and the cancel/continue buttons.
 
+Acceptance is stored for the exact plugin JAR. A changed or updated JAR therefore requires acceptance again. The
+add-on checks this before manual starts, automatic startup, and plugin reload; an unaccepted plugin remains stopped.
+
 ```java
 @Extension
 public class InstallationTerms implements PluginInstallationTermsExtensionPoint {

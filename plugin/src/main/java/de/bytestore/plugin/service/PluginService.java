@@ -22,11 +22,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.jar.JarEntry;
@@ -71,6 +75,9 @@ public class PluginService {
 
     @Autowired
     private Downloader downloader;
+
+    @Autowired
+    private ConfigService configService;
 
     /**
      * Writes the given content into a temporary file with the specified name.
@@ -163,7 +170,7 @@ public class PluginService {
      *
      * It ensures that the current state of the plugins is reset and reinitialized properly.
      */
-    public void reload() {
+    public List<String> reload() {
         // Refresh Update Repository.
         updateService.refresh();
 
@@ -173,15 +180,13 @@ public class PluginService {
         // Load Plugins again.
         managerIO.loadPlugins();
 
-        // Enable not disabled plugins.
-        managerIO.getPlugins().forEach(pluginWrapper -> {
-            String idIO = pluginWrapper.getPluginId();
-
-            if (!pluginWrapper.getPluginState().equals(PluginState.DISABLED)) {
-                // Load Plugin again.
-                managerIO.startPlugin(idIO);
-            }
-        });
+        // Start not disabled plugins only after verifying consent.
+        List<String> awaitingAcceptance = startLoadedPlugins();
+        if (!awaitingAcceptance.isEmpty()) {
+            log.warn("Plugins not started after reload because installation terms need acceptance: {}",
+                    awaitingAcceptance);
+        }
+        return awaitingAcceptance;
     }
 
 
@@ -211,10 +216,13 @@ public class PluginService {
         // Load Plugins from Home.
         managerIO.loadPlugins();
 
-        // Start Plugins.
-        managerIO.startPlugins();
+        // Start only plugins whose terms, when present, were accepted for this exact JAR.
+        List<String> awaitingAcceptance = startLoadedPlugins();
 
         log.info("Loaded {} Plugins.", managerIO.getPlugins().size());
+        if (!awaitingAcceptance.isEmpty()) {
+            log.warn("Plugins not started because installation terms need acceptance: {}", awaitingAcceptance);
+        }
     }
 
     /**
@@ -263,6 +271,10 @@ public class PluginService {
      * @return the state of the plugin after attempting to start it
      */
     public PluginState startPlugin(String idIO) {
+        PluginWrapper wrapper = managerIO.getPlugin(idIO);
+        if (wrapper != null && requiresTermsAcceptance(wrapper) && !hasAcceptedTerms(wrapper)) {
+            throw new PluginTermsAcceptanceRequiredException(idIO);
+        }
         return managerIO.startPlugin(idIO);
     }
 
@@ -291,7 +303,27 @@ public class PluginService {
      * plugins that are configured in the system.
      */
     public void start() {
-        managerIO.startPlugins();
+        List<String> awaitingAcceptance = startLoadedPlugins();
+        if (!awaitingAcceptance.isEmpty()) {
+            log.warn("Plugins not started because installation terms need acceptance: {}", awaitingAcceptance);
+        }
+    }
+
+    private List<String> startLoadedPlugins() {
+        List<String> awaitingAcceptance = new ArrayList<>();
+        for (PluginWrapper wrapper : managerIO.getPlugins()) {
+            if (wrapper.getPluginState() == PluginState.DISABLED) {
+                continue;
+            }
+            try {
+                startPlugin(wrapper.getPluginId());
+            } catch (PluginTermsAcceptanceRequiredException e) {
+                awaitingAcceptance.add(wrapper.getPluginId());
+                log.warn("Plugin {} remains stopped because its installation terms have not been accepted",
+                        wrapper.getPluginId());
+            }
+        }
+        return awaitingAcceptance;
     }
 
     /**
@@ -532,7 +564,7 @@ public class PluginService {
      *
      * @param fileName the name of the file containing the plugin to be checked
      */
-    public void checkPlugin(String fileName) throws RuntimeException {
+    public PluginArtifactIdentity checkPlugin(String fileName) throws RuntimeException {
         // Test Load Plugin.
         String idIO = managerIO.loadPlugin(Paths.get(getTemp() + fileName));
 
@@ -543,25 +575,18 @@ public class PluginService {
         PluginState stateIO = wrapperIO.getPluginState();
         PluginDescriptor descriptorIO = wrapperIO.getDescriptor();
 
-        // Throw Outdated.
-        if (updateService.isVersionCheck() && isOutdated(castPlugin(managerIO.getPlugin(idIO)))) {
-            // Unload Plugin again.
+        try {
+            if (updateService.isVersionCheck() && isOutdated(castPlugin(managerIO.getPlugin(idIO)))) {
+                throw new PluginRuntimeException("Plugin '{}' requires a minimum system version of {}, and you have {}", wrapperIO.getPluginId() + "@" + descriptorIO.getVersion(), descriptorIO.getRequires(), updateService.getVersion());
+            }
+            if (stateIO == PluginState.FAILED) {
+                throw new RuntimeException(exceptionIO);
+            }
+            return new PluginArtifactIdentity(idIO, descriptorIO.getVersion(), sha256(Paths.get(getTemp() + fileName)));
+        } finally {
+            log.info("Test Unloaded Plugin: {}", stateIO);
             managerIO.unloadPlugin(idIO);
-
-            throw new PluginRuntimeException("Plugin '{}' requires a minimum system version of {}, and you have {}", wrapperIO.getPluginId() + "@" + descriptorIO.getVersion(), descriptorIO.getRequires(), updateService.getVersion());
         }
-
-        log.info("Test Unloaded Plugin: {}", stateIO);
-
-        if (stateIO == PluginState.FAILED) {
-            // Unload Plugin again.
-            managerIO.unloadPlugin(idIO);
-
-            throw new RuntimeException(exceptionIO);
-        }
-
-        // Unload Plugin again.
-        managerIO.unloadPlugin(idIO);
     }
 
     /**
@@ -615,21 +640,114 @@ public class PluginService {
     public Optional<InstallationTermsContent> renderInstallationTerms(String fileName) {
         String pluginId = managerIO.loadPlugin(Paths.get(getTemp() + fileName));
         try {
-            List<PluginInstallationTermsExtensionPoint> extensions =
-                    managerIO.getExtensions(PluginInstallationTermsExtensionPoint.class, pluginId);
-            if (extensions.isEmpty()) {
+            PluginWrapper wrapper = managerIO.getPlugin(pluginId);
+            if (wrapper == null) {
                 return Optional.empty();
             }
-            PluginInstallationTermsExtensionPoint extension = extensions.get(0);
-            List<com.vaadin.flow.component.Component> components = extension.render();
-            if (components == null || components.isEmpty()) {
-                return Optional.empty();
+            for (String className : managerIO.getExtensionClassNames(pluginId)) {
+                try {
+                    Class<?> type = wrapper.getPluginClassLoader().loadClass(className);
+                    if (!PluginInstallationTermsExtensionPoint.class.isAssignableFrom(type)) {
+                        continue;
+                    }
+                    PluginInstallationTermsExtensionPoint extension =
+                            (PluginInstallationTermsExtensionPoint) type.getDeclaredConstructor().newInstance();
+                    List<com.vaadin.flow.component.Component> components = extension.render();
+                    if (components == null || components.isEmpty()) {
+                        throw new IllegalStateException("Installation terms extension " + className
+                                + " must return at least one component");
+                    }
+                    String title = extension.title();
+                    return Optional.of(new InstallationTermsContent(
+                            title == null || title.isBlank() ? "Terms and conditions" : title, components));
+                } catch (ReflectiveOperationException | LinkageError e) {
+                    throw new IllegalStateException("Could not render installation terms extension " + className, e);
+                }
             }
-            String title = extension.title();
-            return Optional.of(new InstallationTermsContent(
-                    title == null || title.isBlank() ? "Terms and conditions" : title, components));
+            return Optional.empty();
         } finally {
             managerIO.unloadPlugin(pluginId);
+        }
+    }
+
+    /** Stores consent against the complete archive digest, so every changed JAR requires fresh consent. */
+    public void acceptInstallationTerms(PluginArtifactIdentity identity) {
+        configService.setValue(acceptanceKey(identity.pluginId()), identity.sha256());
+    }
+
+    private boolean hasAcceptedTerms(PluginWrapper wrapper) {
+        String acceptedHash = String.valueOf(configService.getValue(acceptanceKey(wrapper.getPluginId()), ""));
+        return acceptedHash.equals(sha256(wrapper.getPluginPath()));
+    }
+
+    private boolean requiresTermsAcceptance(PluginWrapper wrapper) {
+        Path pluginPath = wrapper.getPluginPath();
+        if (Files.isDirectory(pluginPath)) {
+            Path terms = pluginPath.resolve("plugin-terms.html");
+            if (Files.isRegularFile(terms)) {
+                return true;
+            }
+        } else {
+            try (JarFile jar = new JarFile(pluginPath.toFile())) {
+                JarEntry terms = jar.getJarEntry("plugin-terms.html");
+                if (terms != null) {
+                    return true;
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not inspect installation terms for plugin " + wrapper.getPluginId(), e);
+            }
+        }
+
+        for (String className : managerIO.getExtensionClassNames(wrapper.getPluginId())) {
+            try {
+                Class<?> type = wrapper.getPluginClassLoader().loadClass(className);
+                if (PluginInstallationTermsExtensionPoint.class.isAssignableFrom(type)) {
+                    return true;
+                }
+            } catch (ClassNotFoundException | LinkageError e) {
+                throw new IllegalStateException("Could not inspect extension " + className + " of plugin "
+                        + wrapper.getPluginId(), e);
+            }
+        }
+        return false;
+    }
+
+    private String acceptanceKey(String pluginId) {
+        return "plugins.installationTerms.accepted." + pluginId;
+    }
+
+    private static String sha256(Path path) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            if (Files.isDirectory(path)) {
+                try (var files = Files.walk(path)) {
+                    files.filter(Files::isRegularFile).sorted().forEach(file -> {
+                        try {
+                            digest.update(path.relativize(file).toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                            try (InputStream input = Files.newInputStream(file)) {
+                                byte[] buffer = new byte[8192];
+                                int count;
+                                while ((count = input.read(buffer)) >= 0) {
+                                    digest.update(buffer, 0, count);
+                                }
+                            }
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
+                }
+            } else {
+                try (InputStream input = Files.newInputStream(path)) {
+                    byte[] buffer = new byte[8192];
+                    int count;
+                    while ((count = input.read(buffer)) >= 0) {
+                        digest.update(buffer, 0, count);
+                    }
+                }
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (IOException | NoSuchAlgorithmException | UncheckedIOException e) {
+            throw new IllegalStateException("Could not identify plugin archive " + path, e);
         }
     }
 
@@ -649,7 +767,16 @@ public class PluginService {
      * @param fileName the name of the file representing the moved plugin to be loaded.
      */
     public void loadMovedPlugin(String fileName) {
-        managerIO.loadPlugin(Paths.get(getHome() + fileName));
+        String pluginId = managerIO.loadPlugin(Paths.get(getHome() + fileName));
+        try {
+            PluginWrapper wrapper = managerIO.getPlugin(pluginId);
+            if (wrapper != null && requiresTermsAcceptance(wrapper) && !hasAcceptedTerms(wrapper)) {
+                throw new PluginTermsAcceptanceRequiredException(pluginId);
+            }
+        } catch (RuntimeException e) {
+            managerIO.unloadPlugin(pluginId);
+            throw e;
+        }
     }
 
 

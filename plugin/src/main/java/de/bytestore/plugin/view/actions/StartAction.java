@@ -7,6 +7,7 @@ import com.vaadin.flow.data.selection.SelectionEvent;
 import de.bytestore.plugin.entity.Plugin;
 import de.bytestore.plugin.entity.PluginState;
 import de.bytestore.plugin.service.PluginService;
+import de.bytestore.plugin.service.PluginTermsAcceptanceRequiredException;
 import io.jmix.flowui.Notifications;
 import io.jmix.flowui.action.ActionType;
 import io.jmix.flowui.action.list.ItemTrackingAction;
@@ -73,6 +74,9 @@ public class StartAction<E> extends ItemTrackingAction<E> {
                 try {
                     pluginService.startPlugin(selectedIO.getId());
                     notifications.create(messageBundle.formatMessage("pluginStarted", selectedIO.getId())).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+                } catch (PluginTermsAcceptanceRequiredException e) {
+                    notifications.create(messageBundle.formatMessage("pluginTermsMustBeAccepted", selectedIO.getId()))
+                            .withType(Notifications.Type.WARNING).withPosition(Notification.Position.BOTTOM_END).show();
                 } catch (Exception e) {
                     notifications.create(messageBundle.formatMessage("pluginStartFailed", selectedIO.getId())).withType(Notifications.Type.ERROR).withPosition(Notification.Position.BOTTOM_END).show();
 

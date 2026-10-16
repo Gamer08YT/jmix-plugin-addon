@@ -305,12 +305,10 @@ public class PluginListView extends StandardListView<Plugin> {
     @Subscribe(id = "reloadButton", subject = "clickListener")
     public void onReloadButtonClick(final ClickEvent<JmixButton> event) {
         dialogs.createOptionDialog().withHeader(messageBundle.getMessage("reload")).withText(messageBundle.getMessage("reloadWarning")).withActions(new DialogAction(DialogAction.Type.YES).withHandler(actionPerformedEvent -> {
-            backgroundWorker.handle(new BackgroundTask<Integer, Void>(TimeUnit.MINUTES.toSeconds(1)) {
+            backgroundWorker.handle(new BackgroundTask<Integer, List<String>>(TimeUnit.MINUTES.toSeconds(1)) {
                 @Override
-                public Void run(TaskLifeCycle<Integer> taskLifeCycle) throws Exception {
-                    pluginService.reload();
-
-                    return null;
+                public List<String> run(TaskLifeCycle<Integer> taskLifeCycle) throws Exception {
+                    return pluginService.reload();
                 }
 
                 /**
@@ -319,8 +317,14 @@ public class PluginListView extends StandardListView<Plugin> {
                  * @param result result of execution returned by {@link #run(TaskLifeCycle)} method
                  */
                 @Override
-                public void done(Void result) {
-                    notifications.create(messageBundle.getMessage("pluginsReloaded")).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+                public void done(List<String> awaitingAcceptance) {
+                    if (awaitingAcceptance == null || awaitingAcceptance.isEmpty()) {
+                        notifications.create(messageBundle.getMessage("pluginsReloaded")).withType(Notifications.Type.SUCCESS).withPosition(Notification.Position.BOTTOM_END).show();
+                    } else {
+                        notifications.create(messageBundle.formatMessage("pluginsReloadedTermsRequired",
+                                        String.join(", ", awaitingAcceptance)))
+                                .withType(Notifications.Type.WARNING).withPosition(Notification.Position.BOTTOM_END).show();
+                    }
 
                     getUI().ifPresent(ui -> ui.access(() -> {
                         pluginsDataGrid.getDataProvider().refreshAll();

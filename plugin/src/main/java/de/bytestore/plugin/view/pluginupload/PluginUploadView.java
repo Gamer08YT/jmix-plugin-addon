@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import de.bytestore.plugin.service.PluginService;
 import de.bytestore.plugin.service.InstallationTermsContent;
+import de.bytestore.plugin.service.PluginArtifactIdentity;
 import io.jmix.core.Messages;
 import io.jmix.flowui.Dialogs;
 import io.jmix.flowui.UiComponents;
@@ -68,6 +69,7 @@ public class PluginUploadView extends StandardView {
     private JmixButton pluginSubmit;
 
     private String fileName;
+    private PluginArtifactIdentity artifactIdentity;
 
     @Subscribe("pluginArchive")
     public void onPluginArchiveFileUploadSucceeded(final FileUploadSucceededEvent<FileUploadField, byte[]> event) {
@@ -83,12 +85,12 @@ public class PluginUploadView extends StandardView {
 
         try {
             // Load Uploaded Plugin.
-            pluginService.checkPlugin(fileName);
+            artifactIdentity = pluginService.checkPlugin(fileName);
             Optional<InstallationTermsContent> customTerms = pluginService.renderInstallationTerms(fileName);
             Optional<String> termsFile = pluginService.readInstallationTerms(fileName);
             if (customTerms.isPresent()) {
                 showTermsDialog(customTerms.get());
-            } else if (termsFile.isPresent() && !termsFile.get().isBlank()) {
+            } else if (termsFile.isPresent()) {
                 showTermsDialog(termsFile.get());
             } else {
                 finishValidatedUpload();
@@ -120,9 +122,15 @@ public class PluginUploadView extends StandardView {
 
     @Subscribe(id = "pluginSubmit", subject = "clickListener")
     public void onPluginSubmitClick(final ClickEvent<JmixButton> event) {
-        pluginService.loadMovedPlugin(fileName);
-
-        this.close(StandardOutcome.SAVE);
+        try {
+            pluginService.loadMovedPlugin(fileName);
+            this.close(StandardOutcome.SAVE);
+        } catch (RuntimeException e) {
+            log.error("Unable to install plugin archive {}", fileName, e);
+            pluginSubmit.setEnabled(false);
+            dialogs.createMessageDialog().withHeader(messageBundle.getMessage("installationTermsTitle"))
+                    .withText(messageBundle.getMessage("installationTermsSaveFailed")).open();
+        }
     }
 
     private void showTermsDialog(String termsHtml) {
@@ -152,8 +160,18 @@ public class PluginUploadView extends StandardView {
             fileName = null;
         });
         Button accept = new Button(messageBundle.getMessage("acceptAndContinue"), click -> {
-            dialog.close();
-            finishValidatedUpload();
+            try {
+                pluginService.acceptInstallationTerms(artifactIdentity);
+                dialog.close();
+                finishValidatedUpload();
+            } catch (RuntimeException e) {
+                log.error("Could not store acceptance for plugin {}", artifactIdentity.pluginId(), e);
+                pluginService.removeTemp(fileName);
+                pluginSubmit.setEnabled(false);
+                dialog.close();
+                dialogs.createMessageDialog().withHeader(messageBundle.getMessage("installationTermsTitle"))
+                        .withText(messageBundle.getMessage("installationTermsSaveFailed")).open();
+            }
         });
         accept.setEnabled(false);
         acceptance.addValueChangeListener(event -> accept.setEnabled(event.getValue()));
