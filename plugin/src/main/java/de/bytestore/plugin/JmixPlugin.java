@@ -5,8 +5,13 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import de.bytestore.plugin.bean.PluginView;
+import io.jmix.core.impl.scanning.AnnotationScanMetadataReaderFactory;
+import io.jmix.flowui.sys.ViewControllerMeta;
+import io.jmix.flowui.sys.ViewDescriptorUtils;
 import io.jmix.flowui.view.View;
+import io.jmix.flowui.view.ViewInfo;
 import io.jmix.flowui.view.ViewRegistry;
+import io.jmix.flowui.view.template.impl.ViewTemplateDescriptorRegistry;
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPlugin;
 import org.reflections.Reflections;
@@ -16,10 +21,18 @@ import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
 import java.util.LinkedHashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 /**
  * Represents a Jmix plugin built on top of the SpringPlugin implementation.
@@ -41,9 +54,11 @@ public class JmixPlugin extends SpringPlugin {
     private static final Logger log = LoggerFactory.getLogger(JmixPlugin.class);
     // Store Annotation Config Context.
     private final AnnotationConfigApplicationContext contextIO = new AnnotationConfigApplicationContext();
-    private RouteConfiguration routeConfiguration;
     private final Set<Class<? extends Component>> registeredRoutes = new LinkedHashSet<>();
-    private final Set<String> loadedViewClasses = new LinkedHashSet<>();
+    private final Map<Class<? extends View<?>>, ViewInfo> pluginViews =
+            new IdentityHashMap<>();
+    private final Map<Class<? extends View<?>>, String> pluginTemplatePaths = new IdentityHashMap<>();
+    private final Set<String> registeredViewBeans = new LinkedHashSet<>();
 
     public JmixPlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -96,8 +111,16 @@ public class JmixPlugin extends SpringPlugin {
     public void unregisterRoute(Class<? extends Component> viewClass) {
         RouteConfiguration.forApplicationScope().removeRoute(viewClass);
         registeredRoutes.remove(viewClass);
-        if (loadedViewClasses.remove(viewClass.getName())) {
-            AutowireLoader.getBean(ViewRegistry.class).unloadViewClass(viewClass.getName());
+        @SuppressWarnings("unchecked")
+        Class<? extends View<?>> jmixViewClass = (Class<? extends View<?>>) viewClass;
+        ViewInfo viewInfo = pluginViews.remove(jmixViewClass);
+        if (viewInfo != null) {
+            ViewRegistry viewRegistry = AutowireLoader.getBean(ViewRegistry.class);
+            viewRegistry.getRouteConfiguration().removeRoute(viewClass);
+            removeViewInfo(viewRegistry, viewInfo);
+            removePluginTemplate(jmixViewClass);
+            viewRegistry.reset();
+            removeViewBean(viewClass.getName());
         }
     }
 
@@ -139,12 +162,19 @@ public class JmixPlugin extends SpringPlugin {
      */
     @Override
     public void stop() {
-        registeredRoutes.forEach(RouteConfiguration.forApplicationScope()::removeRoute);
+        ViewRegistry viewRegistry = AutowireLoader.getBean(ViewRegistry.class);
+        registeredRoutes.forEach(viewClass -> {
+            RouteConfiguration.forApplicationScope().removeRoute(viewClass);
+            viewRegistry.getRouteConfiguration().removeRoute(viewClass);
+        });
         registeredRoutes.clear();
-        for (String viewClass : Set.copyOf(loadedViewClasses)) {
-            AutowireLoader.getBean(ViewRegistry.class).unloadViewClass(viewClass);
-        }
-        loadedViewClasses.clear();
+        pluginViews.values().forEach(viewInfo -> removeViewInfo(viewRegistry, viewInfo));
+        pluginViews.clear();
+        List.copyOf(pluginTemplatePaths.keySet()).forEach(this::removePluginTemplate);
+        pluginTemplatePaths.clear();
+        registeredViewBeans.forEach(this::removeViewBean);
+        registeredViewBeans.clear();
+        viewRegistry.reset();
         contextIO.close();
         super.stop();
     }
@@ -187,12 +217,94 @@ public class JmixPlugin extends SpringPlugin {
             }
 
             ViewRegistry viewRegistry = AutowireLoader.getBean(ViewRegistry.class);
-            viewRegistry.loadViewClass(viewClass.getName());
-            loadedViewClasses.add(viewClass.getName());
             @SuppressWarnings("unchecked")
             Class<? extends View<?>> jmixViewClass = (Class<? extends View<?>>) viewClass;
+            AnnotationScanMetadataReaderFactory metadataReaderFactory =
+                    AutowireLoader.getBean(AnnotationScanMetadataReaderFactory.class);
+            ViewControllerMeta controllerMeta = new ViewControllerMeta(metadataReaderFactory, jmixViewClass);
+            String templatePath = registerPluginTemplate(jmixViewClass, pluginClassLoader);
+            ViewInfo viewInfo = new ViewInfo(controllerMeta.getId(), controllerMeta.getControllerClass(),
+                    jmixViewClass, templatePath);
+            viewRegistry.getViewInfos();
+            addViewInfo(viewRegistry, viewInfo);
+            pluginViews.put(jmixViewClass, viewInfo);
+            registerViewBean(componentClass);
             viewRegistry.registerRoute(jmixViewClass);
             registeredRoutes.add(componentClass);
+        }
+    }
+
+    private String registerPluginTemplate(Class<? extends View<?>> viewClass, ClassLoader pluginClassLoader) {
+        String sourcePath = ViewDescriptorUtils.resolveTemplatePath(viewClass);
+        String classLoaderPath = sourcePath.startsWith("/") ? sourcePath.substring(1) : sourcePath;
+        java.net.URL resource = pluginClassLoader.getResource(classLoaderPath);
+        if (resource == null) {
+            throw new IllegalStateException("Plugin view template not found: " + sourcePath
+                    + " for " + viewClass.getName());
+        }
+        try (var input = resource.openStream()) {
+            ViewTemplateDescriptorRegistry descriptorRegistry =
+                    AutowireLoader.getBean(ViewTemplateDescriptorRegistry.class);
+            String registeredPath = descriptorRegistry.createPath(viewClass.getName());
+            descriptorRegistry.put(registeredPath, new String(input.readAllBytes(), StandardCharsets.UTF_8));
+            pluginTemplatePaths.put(viewClass, registeredPath);
+            return registeredPath;
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to read plugin view template " + sourcePath, e);
+        }
+    }
+
+    private void removePluginTemplate(Class<? extends View<?>> viewClass) {
+        String path = pluginTemplatePaths.remove(viewClass);
+        if (path != null) {
+            AutowireLoader.getBean(ViewTemplateDescriptorRegistry.class).remove(path);
+        }
+    }
+
+    private void registerViewBean(Class<? extends Component> viewClass) {
+        ApplicationContext hostContext = AutowireLoader.getApplicationContext();
+        if (!(hostContext instanceof ConfigurableApplicationContext configurableContext)
+                || !(configurableContext.getBeanFactory() instanceof BeanDefinitionRegistry registry)) {
+            throw new IllegalStateException("Host application context cannot register plugin view beans");
+        }
+        String beanName = viewClass.getName();
+        if (!registry.containsBeanDefinition(beanName)) {
+            registry.registerBeanDefinition(beanName,
+                    BeanDefinitionBuilder.genericBeanDefinition(viewClass).getBeanDefinition());
+            registeredViewBeans.add(beanName);
+        }
+    }
+
+    private void removeViewBean(String beanName) {
+        ApplicationContext hostContext = AutowireLoader.getApplicationContext();
+        if (hostContext instanceof ConfigurableApplicationContext configurableContext
+                && configurableContext.getBeanFactory() instanceof BeanDefinitionRegistry registry
+                && registry.containsBeanDefinition(beanName)) {
+            registry.removeBeanDefinition(beanName);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addViewInfo(ViewRegistry viewRegistry, ViewInfo viewInfo) {
+        try {
+            java.lang.reflect.Field viewsField = ViewRegistry.class.getDeclaredField("views");
+            viewsField.setAccessible(true);
+            Map<String, ViewInfo> views = (Map<String, ViewInfo>) viewsField.get(viewRegistry);
+            views.put(viewInfo.getId(), viewInfo);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to register plugin view metadata", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void removeViewInfo(ViewRegistry viewRegistry, ViewInfo viewInfo) {
+        try {
+            java.lang.reflect.Field viewsField = ViewRegistry.class.getDeclaredField("views");
+            viewsField.setAccessible(true);
+            Map<String, ViewInfo> views = (Map<String, ViewInfo>) viewsField.get(viewRegistry);
+            views.remove(viewInfo.getId(), viewInfo);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to unregister plugin view metadata", e);
         }
     }
 
