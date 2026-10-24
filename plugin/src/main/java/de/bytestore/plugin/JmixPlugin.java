@@ -6,6 +6,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import de.bytestore.plugin.bean.PluginView;
 import io.jmix.core.impl.scanning.AnnotationScanMetadataReaderFactory;
+import io.jmix.core.impl.JmixMessageSource;
 import io.jmix.flowui.sys.ViewControllerMeta;
 import io.jmix.flowui.sys.ViewDescriptorUtils;
 import io.jmix.flowui.view.View;
@@ -33,6 +34,13 @@ import java.util.Map;
 import java.util.Set;
 import java.nio.charset.StandardCharsets;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Enumeration;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * Represents a Jmix plugin built on top of the SpringPlugin implementation.
@@ -55,10 +63,13 @@ public class JmixPlugin extends SpringPlugin {
     // Store Annotation Config Context.
     private final AnnotationConfigApplicationContext contextIO = new AnnotationConfigApplicationContext();
     private final Set<Class<? extends Component>> registeredRoutes = new LinkedHashSet<>();
+    private final Map<Class<? extends Component>, Set<RouteConfiguration>> routeConfigurations =
+            new IdentityHashMap<>();
     private final Map<Class<? extends View<?>>, ViewInfo> pluginViews =
             new IdentityHashMap<>();
     private final Map<Class<? extends View<?>>, String> pluginTemplatePaths = new IdentityHashMap<>();
     private final Set<String> registeredViewBeans = new LinkedHashSet<>();
+    private final Set<String> registeredMessageBasenames = new LinkedHashSet<>();
 
     public JmixPlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -89,8 +100,9 @@ public class JmixPlugin extends SpringPlugin {
      * @param viewClass plugin view component
      */
     public void registerRoute(String path, Class<? extends Component> viewClass) {
-        RouteConfiguration.forApplicationScope().setRoute(path, viewClass);
-        registeredRoutes.add(viewClass);
+        RouteConfiguration routeConfiguration = RouteConfiguration.forApplicationScope();
+        routeConfiguration.setRoute(path, viewClass);
+        rememberRoute(viewClass, routeConfiguration);
     }
 
     /**
@@ -103,14 +115,14 @@ public class JmixPlugin extends SpringPlugin {
     @SafeVarargs
     public final void registerRoute(String path, Class<? extends Component> viewClass,
                                     Class<? extends RouterLayout>... layoutClasses) {
-        RouteConfiguration.forApplicationScope().setRoute(path, viewClass, layoutClasses);
-        registeredRoutes.add(viewClass);
+        RouteConfiguration routeConfiguration = RouteConfiguration.forApplicationScope();
+        routeConfiguration.setRoute(path, viewClass, layoutClasses);
+        rememberRoute(viewClass, routeConfiguration);
     }
 
     /** Removes a route registered by this plugin. */
     public void unregisterRoute(Class<? extends Component> viewClass) {
-        RouteConfiguration.forApplicationScope().removeRoute(viewClass);
-        registeredRoutes.remove(viewClass);
+        removeRoutes(viewClass);
         @SuppressWarnings("unchecked")
         Class<? extends View<?>> jmixViewClass = (Class<? extends View<?>>) viewClass;
         ViewInfo viewInfo = pluginViews.remove(jmixViewClass);
@@ -163,10 +175,7 @@ public class JmixPlugin extends SpringPlugin {
     @Override
     public void stop() {
         ViewRegistry viewRegistry = AutowireLoader.getBean(ViewRegistry.class);
-        registeredRoutes.forEach(viewClass -> {
-            RouteConfiguration.forApplicationScope().removeRoute(viewClass);
-            viewRegistry.getRouteConfiguration().removeRoute(viewClass);
-        });
+        List.copyOf(registeredRoutes).forEach(this::removeRoutes);
         registeredRoutes.clear();
         pluginViews.values().forEach(viewInfo -> removeViewInfo(viewRegistry, viewInfo));
         pluginViews.clear();
@@ -174,6 +183,7 @@ public class JmixPlugin extends SpringPlugin {
         pluginTemplatePaths.clear();
         registeredViewBeans.forEach(this::removeViewBean);
         registeredViewBeans.clear();
+        unregisterPluginMessages();
         viewRegistry.reset();
         contextIO.close();
         super.stop();
@@ -190,7 +200,86 @@ public class JmixPlugin extends SpringPlugin {
     @Override
     public void start() {
         super.start();
+        registerPluginMessages();
         registerAnnotatedPluginViews();
+    }
+
+    private void registerPluginMessages() {
+        ClassLoader pluginClassLoader = getWrapper().getPluginClassLoader();
+        Set<String> basenames = findPluginMessageBasenames(pluginClassLoader);
+        if (basenames.isEmpty()) {
+            log.debug("Plugin {} has no messages*.properties bundles", getWrapper().getPluginId());
+            return;
+        }
+
+        JmixMessageSource messageSource = AutowireLoader.getBean(JmixMessageSource.class);
+        registeredMessageBasenames.addAll(basenames);
+        messageSource.addBasenames(basenames.toArray(String[]::new));
+        messageSource.clearCache();
+        log.info("Registered {} message bundle(s) for plugin {}", basenames.size(), getWrapper().getPluginId());
+    }
+
+    private Set<String> findPluginMessageBasenames(ClassLoader classLoader) {
+        if (!(classLoader instanceof URLClassLoader pluginClassLoader)) {
+            log.warn("Cannot discover message bundles for plugin {}: its classloader is not URL based",
+                    getWrapper().getPluginId());
+            return Set.of();
+        }
+
+        Set<String> basenames = new LinkedHashSet<>();
+        Pattern messageFile = Pattern.compile("messages(?:_[A-Za-z0-9_-]+)?\\.properties");
+        for (URL classpathUrl : pluginClassLoader.getURLs()) {
+            try {
+                if (!"file".equals(classpathUrl.getProtocol())) {
+                    continue;
+                }
+                Path classpathEntry = Path.of(classpathUrl.toURI());
+                if (Files.isDirectory(classpathEntry)) {
+                    try (var paths = Files.walk(classpathEntry)) {
+                        paths.filter(Files::isRegularFile)
+                                .filter(path -> messageFile.matcher(path.getFileName().toString()).matches())
+                                .forEach(path -> addMessageBasename(classLoader,
+                                        classpathEntry.relativize(path).toString().replace(path.getFileSystem()
+                                                .getSeparator(), "/"), basenames));
+                    }
+                } else if (Files.isRegularFile(classpathEntry) && classpathEntry.toString().endsWith(".jar")) {
+                    try (JarFile jarFile = new JarFile(classpathEntry.toFile())) {
+                        Enumeration<java.util.jar.JarEntry> entries = jarFile.entries();
+                        while (entries.hasMoreElements()) {
+                            String resourcePath = entries.nextElement().getName();
+                            int slash = resourcePath.lastIndexOf('/');
+                            String fileName = slash >= 0 ? resourcePath.substring(slash + 1) : resourcePath;
+                            if (messageFile.matcher(fileName).matches()) {
+                                addMessageBasename(classLoader, resourcePath, basenames);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Unable to scan plugin classpath entry {} for message bundles", classpathUrl, e);
+            }
+        }
+        return basenames;
+    }
+
+    private void addMessageBasename(ClassLoader classLoader, String resourcePath, Set<String> basenames) {
+        URL resource = classLoader.getResource(resourcePath);
+        if (resource != null) {
+            String basename = resource.toExternalForm().replaceFirst("(?:_[A-Za-z0-9_-]+)?\\.properties$", "");
+            basenames.add(basename);
+        }
+    }
+
+    private void unregisterPluginMessages() {
+        if (registeredMessageBasenames.isEmpty()) {
+            return;
+        }
+        JmixMessageSource messageSource = AutowireLoader.getBean(JmixMessageSource.class);
+        Set<String> remainingBasenames = new LinkedHashSet<>(messageSource.getBasenameSet());
+        remainingBasenames.removeAll(registeredMessageBasenames);
+        messageSource.setBasenames(remainingBasenames.toArray(String[]::new));
+        messageSource.clearCache();
+        registeredMessageBasenames.clear();
     }
 
     private void registerAnnotatedPluginViews() {
@@ -230,8 +319,21 @@ public class JmixPlugin extends SpringPlugin {
             pluginViews.put(jmixViewClass, viewInfo);
             registerViewBean(componentClass);
             viewRegistry.registerRoute(jmixViewClass);
-            registeredRoutes.add(componentClass);
+            rememberRoute(componentClass, viewRegistry.getRouteConfiguration());
         }
+    }
+
+    private void rememberRoute(Class<? extends Component> viewClass, RouteConfiguration routeConfiguration) {
+        registeredRoutes.add(viewClass);
+        routeConfigurations.computeIfAbsent(viewClass, ignored -> new LinkedHashSet<>()).add(routeConfiguration);
+    }
+
+    private void removeRoutes(Class<? extends Component> viewClass) {
+        Set<RouteConfiguration> configurations = routeConfigurations.remove(viewClass);
+        if (configurations != null) {
+            configurations.forEach(configuration -> configuration.removeRoute(viewClass));
+        }
+        registeredRoutes.remove(viewClass);
     }
 
     private String registerPluginTemplate(Class<? extends View<?>> viewClass, ClassLoader pluginClassLoader) {
