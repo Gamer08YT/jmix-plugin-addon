@@ -50,6 +50,40 @@ The Add-on comes with 4 included Views.
 - RepositoryListView [/repositories]
 - RepositoryDetailView [/repositories/{id}]
 
+### Plugin Routes and Views
+
+A plugin can register its views as Vaadin routes at runtime by calling `registerRoute()` from its `JmixPlugin.start()`
+method. The route is available in the application while the plugin is started. Call `unregisterRoute()` from `stop()`
+to remove it when the plugin stops.
+
+```java
+public class ExamplePlugin extends JmixPlugin {
+    public ExamplePlugin(PluginWrapper wrapper) {
+        super(wrapper);
+    }
+
+    @Override
+    public void start() {
+        registerRoute("example", ExampleView.class);
+    }
+
+    @Override
+    public void stop() {
+        unregisterRoute(ExampleView.class);
+    }
+}
+```
+
+`ExampleView` must be a Vaadin `Component` (Jmix Flow UI views extend this). To attach the route to a router layout,
+pass the layout class after the view class:
+
+```java
+registerRoute("example", ExampleView.class, DefaultMainViewParent.class);
+```
+
+The Welcome Plugin demonstrates this API with `BlankView` at `/welcome/example`. The existing `@Route` annotation on a
+view does not register it dynamically; use `registerRoute()` for plugin routes.
+
 ## Features
 
 - Plugin Management (Disable/Enable/Start/Stop/Delete/Download/Update)

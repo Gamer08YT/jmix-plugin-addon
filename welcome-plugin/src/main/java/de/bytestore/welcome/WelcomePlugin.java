@@ -3,7 +3,6 @@ package de.bytestore.welcome;
 import de.bytestore.plugin.JmixPlugin;
 import de.bytestore.welcome.extensions.ConfigExtension;
 import org.pf4j.PluginWrapper;
-import org.pf4j.spring.SpringPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -57,6 +56,7 @@ public class WelcomePlugin extends JmixPlugin {
     @Override
     public void start() {
         log.info("WelcomePlugin.start()");
+        super.start();
 
 //        if ((Boolean) pluginService.getValue("welcome.debug", false))
 //            log.info("Debug Mode is enabled.");
@@ -78,6 +78,7 @@ public class WelcomePlugin extends JmixPlugin {
     @Override
     public void stop() {
         log.info("WelcomePlugin.stop()");
+        super.stop();
     }
 
     /**

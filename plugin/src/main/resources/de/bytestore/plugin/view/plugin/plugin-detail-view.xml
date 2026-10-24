@@ -15,50 +15,52 @@
         <action id="closeAction" type="detail_close"/>
     </actions>
     <layout>
-        <tabSheet id="pluginTabSheet" themeNames="bordered centered" width="100%">
-            <tab id="general" label="msg://general">
-                <formLayout id="form" dataContainer="pluginDc">
-                    <responsiveSteps>
-                        <responsiveStep minWidth="0" columns="1"/>
-                        <responsiveStep minWidth="40em" columns="2"/>
-                    </responsiveSteps>
-                    <textField readOnly="true" id="idField" property="id"/>
-                    <textField readOnly="true" id="pathField" property="path"/>
-                    <textField readOnly="true" id="descriptionField" property="description"/>
-                    <textField readOnly="true" id="versionField" property="version"/>
-                    <textField readOnly="true" id="licenseField" property="license"/>
-                    <textField readOnly="true" id="providerField" property="provider"/>
-                    <textField readOnly="true" id="requiresField" property="requires"/>
-                    <select readOnly="true" id="stateField" property="state"/>
-                </formLayout>
-            </tab>
-            <tab id="changelogs" label="msg://changelogs">
-                <vbox id="changelogsLayout">
-                    <p id="noChangelogsNote" text="msg://noChangelogsNote"/>
-                </vbox>
-            </tab>
-            <tab id="licenses" label="msg://licenses">
-                <vbox id="licensesLayout">
-                    <p id="noLicensesNote" text="msg://noLicensesNote"/>
-                </vbox>
-            </tab>
-            <tab id="about" label="msg://about">
-                <vbox id="aboutLayout">
-                    <p id="noAboutNote" text="msg://noAboutNote"/>
-                </vbox>
-            </tab>
-            <tab id="settings" label="msg://settings">
-                <vbox id="settingsLayout">
-                    <p id="noSettingsNote" text="msg://noSettingsNote"/>
-                </vbox>
-            </tab>
-        </tabSheet>
-        <hbox id="detailActions">
-            <button id="closeButton" action="closeAction"/>
-            <button id="downloadButton" icon="lumo:download" text="msg://download"/>
-            <button id="termsButton" icon="lumo:info-circle" text="msg://installationTerms"/>
-            <button id="removeButton" icon="vaadin:trash" themeNames="error" text="msg://remove"/>
-            <button id="saveButton" icon="vaadin:check" enabled="false" themeNames="success" text="msg://save"/>
-        </hbox>
+        <vbox spacing="false" padding="false" width="100%" height="100%">
+            <tabSheet id="pluginTabSheet" themeNames="bordered centered" width="100%">
+                <tab id="general" label="msg://general">
+                    <formLayout id="form" dataContainer="pluginDc">
+                        <responsiveSteps>
+                            <responsiveStep minWidth="0" columns="1"/>
+                            <responsiveStep minWidth="40em" columns="2"/>
+                        </responsiveSteps>
+                        <textField readOnly="true" id="idField" property="id"/>
+                        <textField readOnly="true" id="pathField" property="path"/>
+                        <textField readOnly="true" id="descriptionField" property="description"/>
+                        <textField readOnly="true" id="versionField" property="version"/>
+                        <textField readOnly="true" id="licenseField" property="license"/>
+                        <textField readOnly="true" id="providerField" property="provider"/>
+                        <textField readOnly="true" id="requiresField" property="requires"/>
+                        <select readOnly="true" id="stateField" property="state"/>
+                    </formLayout>
+                </tab>
+                <tab id="changelogs" label="msg://changelogs">
+                    <vbox id="changelogsLayout">
+                        <p id="noChangelogsNote" text="msg://noChangelogsNote"/>
+                    </vbox>
+                </tab>
+                <tab id="licenses" label="msg://licenses">
+                    <vbox id="licensesLayout">
+                        <p id="noLicensesNote" text="msg://noLicensesNote"/>
+                    </vbox>
+                </tab>
+                <tab id="about" label="msg://about">
+                    <vbox id="aboutLayout">
+                        <p id="noAboutNote" text="msg://noAboutNote"/>
+                    </vbox>
+                </tab>
+                <tab id="settings" label="msg://settings">
+                    <vbox id="settingsLayout">
+                        <p id="noSettingsNote" text="msg://noSettingsNote"/>
+                    </vbox>
+                </tab>
+            </tabSheet>
+            <hbox id="detailActions">
+                <button id="closeButton" action="closeAction"/>
+                <button id="downloadButton" icon="lumo:download" text="msg://download"/>
+                <button id="termsButton" icon="lumo:info-circle" text="msg://installationTerms"/>
+                <button id="removeButton" icon="vaadin:trash" themeNames="error" text="msg://remove"/>
+                <button id="saveButton" icon="vaadin:check" enabled="false" themeNames="success" text="msg://save"/>
+            </hbox>
+        </vbox>
     </layout>
 </view>

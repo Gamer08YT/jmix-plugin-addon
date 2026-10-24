@@ -27,8 +27,9 @@ public class PluginData {
     @Column(name = "ID", nullable = false, length = 512)
     @Id
     private String id;
-    @Column(name = "KEY_")
-    @Lob
+    // Configuration entries are small strings. Keeping this as a bounded VARCHAR avoids
+    // HSQLDB file LOB references, which can become unreadable after an interrupted shutdown.
+    @Column(name = "KEY_", length = 4000)
     private String value;
     @JmixGeneratedValue
     @Column(name = "UUID")

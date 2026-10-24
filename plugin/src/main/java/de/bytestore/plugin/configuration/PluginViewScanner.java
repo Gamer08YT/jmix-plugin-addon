@@ -15,9 +15,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 import java.util.List;
 import java.util.Set;
@@ -32,7 +29,6 @@ import java.util.Set;
  * This functionality allows seamless integration of custom plugin views into the
  * Spring-managed environment without the need for explicit bean declarations,
  * enhancing modular*/
-@Configuration
 public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
     private static final Logger log = LoggerFactory.getLogger(PluginViewScanner.class);
     private ApplicationContext applicationContext;
@@ -53,16 +49,10 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
      *                        interacting with the registry
      */
     @Override
-    @Order(Ordered.LOWEST_PRECEDENCE)
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        // Build Reflections scanner to scan the entire classpath
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forJavaClassPath())
-                .setScanners(Scanners.TypesAnnotated)
-        );
-
-        // Find all classes annotated with @PluginView
-        Set<Class<?>> pluginViewClasses = reflections.getTypesAnnotatedWith(PluginView.class, true);
+        log.info("Plugin view scanner started");
+        Set<Class<?>> pluginViewClasses = findPluginViews();
+        log.info("Plugin view scanner found {} plugin views", pluginViewClasses.size());
 
         for (Class<?> clazz : pluginViewClasses) {
 
@@ -70,14 +60,35 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
             if (clazz.isAnnotationPresent(ViewController.class)) {
                 String beanName = clazz.getName(); // or clazz.getSimpleName(), depending on your naming convention
 
+                if (registry.containsBeanDefinition(beanName)) {
+                    log.debug("Plugin view bean already registered: {}", beanName);
+                    continue;
+                }
+
                 BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
                 registry.registerBeanDefinition(beanName, builder.getBeanDefinition());
 
 
-                log.info("Registered Plugin View: " + clazz.getName());
+                log.info("Registered Plugin View: {}", clazz.getName());
             } else
                 log.warn("Class {} is annotated with @PluginView but is not a JMIX ViewController.", clazz.getName());
         }
+    }
+
+    private Set<Class<?>> findPluginViews() {
+        return scanUrls(ClasspathHelper.forClassLoader(
+                getClass().getClassLoader(),
+                Thread.currentThread().getContextClassLoader()));
+    }
+
+    private Set<Class<?>> scanUrls(java.util.Collection<java.net.URL> urls) {
+        if (urls.isEmpty()) {
+            return java.util.Collections.emptySet();
+        }
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(urls)
+                .setScanners(Scanners.TypesAnnotated));
+        return reflections.getTypesAnnotatedWith(PluginView.class, true);
     }
 
     /**
@@ -93,7 +104,6 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
      *                    internal state or its metadata about existing bean definitions.
      */
     @Override
-    @Order(Ordered.LOWEST_PRECEDENCE)
     public void postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory beanFactory) {
         // Nor implemented.
     }
@@ -119,7 +129,6 @@ public class PluginViewScanner implements BeanDefinitionRegistryPostProcessor, A
      * @throws BeansException if an error occurs while accessing the application context.
      */
     @Override
-    @Order(Ordered.HIGHEST_PRECEDENCE)
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
 
